@@ -1,25 +1,12 @@
 const express = require('express');
 const router = express.Router();
-// We'll implement these controllers next
-// const { register, login, logout, getMe, updateProfile } = require('../controllers/authController');
+const { register, login, getMe } = require('../controllers/authController');
 // const { protect } = require('../middleware/auth');
 
-// Placeholder routes - we'll implement the controllers next
-router.post('/register', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'User registration endpoint - Coming Soon',
-    data: req.body 
-  });
-});
-
-router.post('/login', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'User login endpoint - Coming Soon',
-    data: req.body 
-  });
-});
+// Auth routes
+router.post('/register', register);
+router.post('/login', login);
+router.get('/me', getMe); // Will need auth middleware later
 
 router.post('/logout', (req, res) => {
   res.json({ 
