@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Partner = require('../models/Partner');
 const jwt = require('jsonwebtoken');
 const { asyncHandler } = require('../middleware/error');
 
@@ -31,10 +32,9 @@ const register = asyncHandler(async (req, res) => {
     totalWaterSaved: 0,
     totalWastePrevented: 0
   });
-
   // Generate JWT token
   const token = jwt.sign(
-    { id: user._id },
+    { id: user._id, type: 'user' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
   );
@@ -50,7 +50,8 @@ const register = asyncHandler(async (req, res) => {
         ecoTier: user.ecoTier,
         impactPoints: user.impactPoints
       },
-      token
+      token,
+      userType: 'user'
     }
   });
 });
@@ -93,10 +94,9 @@ const login = asyncHandler(async (req, res) => {
       message: 'Invalid credentials'
     });
   }
-
   // Generate JWT token
   const token = jwt.sign(
-    { id: user._id },
+    { id: user._id, type: 'user' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
   );
@@ -114,7 +114,8 @@ const login = asyncHandler(async (req, res) => {
         totalCarbonSaved: user.totalCarbonSaved,
         joinedAt: user.createdAt
       },
-      token
+      token,
+      userType: 'user'
     }
   });
 });
@@ -147,8 +148,143 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * @desc    Register a new partner
+ * @route   POST /api/auth/partner/register
+ * @access  Public
+ */
+const registerPartner = asyncHandler(async (req, res) => {
+  const { companyName, email, password } = req.body;
+
+  // Check if partner already exists
+  const existingPartner = await Partner.findOne({ email });
+  if (existingPartner) {
+    return res.status(400).json({
+      success: false,
+      message: 'Partner already exists with this email'
+    });
+  }
+
+  // Create partner (password will be hashed automatically by pre-save middleware)
+  const partner = await Partner.create({
+    companyName,
+    email,
+    password
+  });
+
+  // Generate JWT token
+  const token = jwt.sign(
+    { id: partner._id, type: 'partner' },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE }
+  );
+
+  res.status(201).json({
+    success: true,
+    message: 'Partner registered successfully',
+    data: {
+      partner: {
+        id: partner._id,
+        companyName: partner.companyName,
+        email: partner.email,
+        status: partner.status,
+        totalImpactGenerated: partner.totalImpactGenerated
+      },
+      token,
+      userType: 'partner'
+    }
+  });
+});
+
+/**
+ * @desc    Login partner
+ * @route   POST /api/auth/partner/login
+ * @access  Public
+ */
+const loginPartner = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // Check if email and password are provided
+  if (!email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide email and password'
+    });
+  }
+
+  // Check for partner (explicitly select password for comparison)
+  const partner = await Partner.findOne({ email }).select('+password');
+  if (!partner) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid credentials'
+    });
+  }
+
+  // Check if password matches using the model's matchPassword method
+  const isMatch = await partner.matchPassword(password);
+  
+  if (!isMatch) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid credentials'
+    });
+  }
+
+  // Generate JWT token
+  const token = jwt.sign(
+    { id: partner._id, type: 'partner' },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE }
+  );
+
+  res.status(200).json({
+    success: true,
+    message: 'Partner login successful',
+    data: {
+      partner: {
+        id: partner._id,
+        companyName: partner.companyName,
+        email: partner.email,
+        status: partner.status,
+        totalImpactGenerated: partner.totalImpactGenerated,
+        joinedAt: partner.createdAt
+      },
+      token,
+      userType: 'partner'
+    }
+  });
+});
+
+/**
+ * @desc    Get current logged in partner
+ * @route   GET /api/auth/partner/me
+ * @access  Private
+ */
+const getPartnerMe = asyncHandler(async (req, res) => {
+  const partner = await Partner.findById(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      partner: {
+        id: partner._id,
+        companyName: partner.companyName,
+        email: partner.email,
+        status: partner.status,
+        totalImpactGenerated: partner.totalImpactGenerated,
+        isActive: partner.isActive,
+        joinedAt: partner.createdAt
+      }
+    }
+  });
+});
+
 module.exports = {
   register,
   login,
-  getMe
+  getMe,
+  registerPartner,
+  loginPartner,
+  getPartnerMe
 };

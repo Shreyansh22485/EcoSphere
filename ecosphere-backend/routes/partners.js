@@ -1,24 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Partner authentication and registration
-router.post('/register', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Partner registration endpoint - Coming Soon',
-    data: req.body
-  });
-});
-
-router.post('/login', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Partner login endpoint - Coming Soon',
-    data: req.body
-  });
-});
-
-// Partner dashboard and profile
+// Partner dashboard endpoint
 router.get('/dashboard', (req, res) => {
   res.json({ 
     success: true, 
@@ -26,20 +9,17 @@ router.get('/dashboard', (req, res) => {
   });
 });
 
-router.put('/profile', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Update partner profile endpoint - Coming Soon',
-    data: req.body
-  });
-});
-
 // Partner product management
 router.post('/products', (req, res) => {
+  // Redirect to main products endpoint
+  res.redirect(307, '/api/products');
+});
+
+// Partner leaderboard
+router.get('/leaderboard', (req, res) => {
   res.json({ 
     success: true, 
-    message: 'Add new product endpoint - Coming Soon',
-    data: req.body
+    message: 'Partner leaderboard endpoint - Coming Soon'
   });
 });
 

@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 function EcoSpherePartnerHub() {
   const [currentStep, setCurrentStep] = useState(1);
   const [mode, setMode] = useState('simplified'); // 'simplified' or 'advanced'
-  const [ecoScore, setEcoScore] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
   const [formData, setFormData] = useState({
     // Basic Information
     companyName: "",
@@ -48,44 +49,8 @@ function EcoSpherePartnerHub() {
 
   const totalSteps = mode === 'simplified' ? 4 : 6;
 
-  // Calculate EcoScore in real-time
-  useEffect(() => {
-    calculateEcoScore();
-  }, [formData]);
-
-  const calculateEcoScore = () => {
-    let score = 0;
-    
-    // Carbon Impact (25 points)
-    if (formData.renewableEnergyPercent) {
-      score += Math.min(25, (parseInt(formData.renewableEnergyPercent) / 100) * 25);
-    }
-    
-    // Materials (20 points)
-    if (formData.recycledContentPercent) {
-      score += Math.min(15, (parseInt(formData.recycledContentPercent) / 100) * 15);
-    }
-    if (formData.bioBasedContentPercent) {
-      score += Math.min(10, (parseInt(formData.bioBasedContentPercent) / 100) * 10);
-    }
-    
-    // Packaging (15 points)
-    if (formData.plasticFreePackaging) score += 10;
-    if (formData.packagingRecyclable === 'yes') score += 5;
-    
-    // Social (15 points)
-    if (formData.fairLaborCertified) score += 8;
-    if (formData.workerSafetyPrograms) score += 7;
-    
-    // Lifecycle (15 points)
-    if (formData.takeBackProgram) score += 8;
-    if (formData.expectedLifespan && parseInt(formData.expectedLifespan) > 5) score += 7;
-    
-    // Certifications (10 points)
-    score += Math.min(10, formData.certifications.length * 2);
-    
-    setEcoScore(Math.round(score));
-  };
+  // Remove the real-time EcoScore calculation
+  // EcoScore will now be calculated by AI on the backend
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -115,25 +80,67 @@ function EcoSpherePartnerHub() {
       setCurrentStep(currentStep - 1);
     }
   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
+    setIsSubmitting(true);
+    setSubmitStatus(null);
     
-    // Add a small delay to ensure user sees the submit button was clicked
-    setTimeout(() => {
-      window.location.href = "/submitted";
-    }, 100);
+    try {
+      console.log('🚀 Submitting product to EcoSphere API...');
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('✅ Product submitted successfully:', result);
+        setSubmitStatus('success');
+        
+        // Show success message with AI-generated EcoScore
+        setTimeout(() => {
+          alert(`🎉 Success! Your product has been submitted for review.\n\nAI-Generated EcoScore: ${result.data.aiAnalysis.insights.confidence ? Math.round(result.data.product.ecoScore) : 'Calculating...'}/1000\nTier: ${result.data.product.tier}\nImpact Points: ${result.data.product.impactPoints}\n\nYou'll receive an email when approved!`);
+          window.location.href = "/submitted";
+        }, 1000);
+      } else {
+        console.error('❌ Submission failed:', result);
+        setSubmitStatus('error');
+        alert(`❌ Submission failed: ${result.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('❌ Network error:', error);
+      setSubmitStatus('error');
+      alert('❌ Network error. Please check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  const getEcoTier = () => {
+    // Show estimated tier based on form completion
+    const completionScore = calculateFormCompletion();
+    if (completionScore >= 90) return { tier: "🌟 EcoChampion (Estimated)", color: "#006400" };
+    if (completionScore >= 75) return { tier: "🌿 EcoPioneer (Estimated)", color: "#228B22" };
+    if (completionScore >= 60) return { tier: "🌱 EcoSelect (Estimated)", color: "#32CD32" };
+    if (completionScore >= 45) return { tier: "♻️ EcoAware (Estimated)", color: "#FFD700" };
+    if (completionScore >= 30) return { tier: "🌍 EcoEntry (Estimated)", color: "#FF8C00" };
+    return { tier: "⚠️ Complete form for estimate", color: "#FF0000" };
   };
 
-  const getEcoTier = (score) => {
-    if (score >= 90) return { tier: "🌟 EcoChampion", color: "#006400" };
-    if (score >= 75) return { tier: "🌿 EcoPioneer", color: "#228B22" };
-    if (score >= 60) return { tier: "🌱 EcoSelect", color: "#32CD32" };
-    if (score >= 45) return { tier: "♻️ EcoAware", color: "#FFD700" };
-    if (score >= 30) return { tier: "🌍 EcoEntry", color: "#FF8C00" };
-    return { tier: "⚠️ Standard", color: "#FF0000" };
+  const calculateFormCompletion = () => {
+    const totalFields = Object.keys(formData).length;
+    const filledFields = Object.values(formData).filter(value => {
+      if (typeof value === 'string') return value.trim() !== '';
+      if (typeof value === 'boolean') return true; // Booleans always count as filled
+      if (Array.isArray(value)) return value.length > 0;
+      return value !== null && value !== undefined;
+    }).length;
+    
+    return Math.round((filledFields / totalFields) * 100);
   };
 
   const renderStepContent = () => {
@@ -512,8 +519,8 @@ function EcoSpherePartnerHub() {
         return null;
     }
   };
-
-  const { tier, color } = getEcoTier(ecoScore);
+  const { tier, color } = getEcoTier();
+  const formCompletion = calculateFormCompletion();
 
   return (
     <div className="partner-hub">
@@ -554,33 +561,44 @@ function EcoSpherePartnerHub() {
         </div>
       </div>
 
-      {/* Real-time EcoScore */}
+      {/* Form Completion and EcoScore Preview */}
       <div className="ecoscore-display">
         <div className="ecoscore-card">
           <div className="ecoscore-value" style={{ color }}>
-            {ecoScore}/100
+            {formCompletion}%
           </div>
           <div className="ecoscore-tier" style={{ color }}>
             {tier}
           </div>
-          <div className="ecoscore-label">Real-time EcoScore</div>
+          <div className="ecoscore-label">Form Completion</div>
+          <div className="ecoscore-note">
+            🤖 AI will calculate final EcoScore (0-1000) after submission
+          </div>
         </div>
         
         {/* Impact Preview */}
         <div className="impact-preview">
-          <h4>Projected Environmental Benefits:</h4>
+          <h4>Expected AI Analysis:</h4>
           <div className="benefits-grid">
             <div className="benefit-item">
               <span className="benefit-icon">🌱</span>
-              <span>CO2 Reduction: {Math.round(ecoScore * 0.8)}kg/year</span>
+              <span>CO2 Reduction Analysis</span>
             </div>
             <div className="benefit-item">
               <span className="benefit-icon">💧</span>
-              <span>Water Savings: {Math.round(ecoScore * 12)}L/year</span>
+              <span>Water Savings Calculation</span>
             </div>
             <div className="benefit-item">
               <span className="benefit-icon">♻️</span>
-              <span>Waste Prevention: {Math.round(ecoScore * 0.3)}kg/year</span>
+              <span>Waste Prevention Assessment</span>
+            </div>
+            <div className="benefit-item">
+              <span className="benefit-icon">🌊</span>
+              <span>Ocean Impact Evaluation</span>
+            </div>
+            <div className="benefit-item">
+              <span className="benefit-icon">🌳</span>
+              <span>Tree Equivalent Calculation</span>
             </div>
           </div>
         </div>
@@ -598,14 +616,17 @@ function EcoSpherePartnerHub() {
                 ← Previous
               </button>
             )}
-            
-            {currentStep < totalSteps ? (
+              {currentStep < totalSteps ? (
               <button type="button" onClick={nextStep} className="btn-primary">
                 Next →
               </button>
             ) : (
-              <button type="submit" className="btn-submit">
-                Submit for Review 🚀
+              <button 
+                type="submit" 
+                className={`btn-submit ${isSubmitting ? 'submitting' : ''}`}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? '🤖 AI Analyzing...' : 'Submit for AI Analysis 🚀'}
               </button>
             )}
           </div>

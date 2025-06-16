@@ -5,6 +5,8 @@ import Home from "./Component/Home";
 import NavBar from "./Component/navbar";
 import Checkout from "./Component/Checkout"
 import Login from "./Component/Login";
+import UserRegister from "./Component/UserRegister";
+import PartnerRegister from "./Component/PartnerRegister";
 import Headergreen from "./Component/Headergreen";
 import Homegreen from "./Component/Homegreen";
 import NavBarg from "./Component/navbargreen";
@@ -30,6 +32,15 @@ function App() {
     <Router>
       <div className="app">
         <Routes>
+          {/* Authentication Routes */}
+          <Route path="/login" element={<Login/>}/> 
+          <Route path="/register-user" element={<UserRegister/>}/> 
+          <Route path="/register-partner" element={<PartnerRegister/>}/> 
+          
+          {/* Partner Routes */}
+          <Route path="/partner-hub" element={[<Headergreen/>, <NavBarg/>, <EcoSpherePartnerHub/>, <Footer/>]}/> 
+          
+          {/* Main Routes */}
           {/* <Route path="/greenovation" element={<Homegreen/>}/> */}
           <Route path="/feedbacksubmitted" element={[<Headergreen/>, <NavBarg/>, <FSubmitted/>]}/>
           <Route path="/feedback" element={[<Headergreen/>, <NavBarg/>, <Feedback/>, <Footer/>]}/> 
@@ -40,7 +51,6 @@ function App() {
           <Route path="/ecosphere-impact" element={[<Headergreen/>,<NavBarg/>, <EcoSphereImpact/>, <Footer/>  ]}/>
           <Route path="/ecosphere-learn" element={[<Headergreen/>,<NavBarg/>, <EducationSection/>, <Footer/>  ]}/>
           <Route path="/ecosphere" element={[<Headergreen/>,<NavBarg/>, <Homegreen/>, <Footer/>  ]}/>
-          <Route path="/login" element={<Login/>}/> 
           <Route path="/checkout" element={[<Header />, <Checkout/>, <Footer/>  ]}/>
           <Route path="/" element={[<Header />, <NavBar/>, <Home />, <Footer/>  ]}/>
           <Route path="/dashboard" element={[<Header />, <NavBarg/>, <Dashboard/>]} />

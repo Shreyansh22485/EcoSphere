@@ -46,52 +46,82 @@ const ProductSchema = new mongoose.Schema({
     ref: 'Partner',
     required: [true, 'Product must belong to a partner']
   },
-  
-  // EcoScore components (0-100 scale)
+    // EcoScore components (0-1000 scale)
   ecoScore: {
     overall: { 
       type: Number, 
-      required: [true, 'Overall EcoScore is required'],
+      required: false, // Will be calculated by AI
       min: 0, 
-      max: 100 
+      max: 1000,
+      default: 0
+    },
+    tier: {
+      type: String,
+      enum: ['🌟 EcoChampion', '🌿 EcoPioneer', '🌱 EcoSelect', '♻️ EcoAware', '🌍 EcoEntry', '⚠️ Standard'],
+      default: '⚠️ Standard'
     },
     components: {
       carbon: { 
         type: Number, 
         min: 0, 
-        max: 25,
+        max: 250,
         default: 0
       },
       materials: { 
         type: Number, 
         min: 0, 
-        max: 20,
+        max: 200,
         default: 0
       },
       packaging: { 
         type: Number, 
         min: 0, 
-        max: 15,
+        max: 150,
         default: 0
       },
       social: { 
         type: Number, 
         min: 0, 
-        max: 15,
+        max: 150,
         default: 0
       },
       lifecycle: { 
         type: Number, 
         min: 0, 
-        max: 15,
+        max: 150,
         default: 0
       },
       certifications: { 
         type: Number, 
         min: 0, 
-        max: 10,
+        max: 100,
         default: 0
       }
+    },
+    // AI-generated insights
+    aiInsights: {
+      carbonReduced: {
+        value: { type: Number, default: 0 }, // kg CO2 saved vs conventional
+        description: { type: String, default: '' }
+      },
+      waterSaved: {
+        value: { type: Number, default: 0 }, // liters saved
+        description: { type: String, default: '' }
+      },
+      wastePrevented: {
+        value: { type: Number, default: 0 }, // kg waste prevented
+        description: { type: String, default: '' }
+      },
+      oceanPlasticDiverted: {
+        value: { type: Number, default: 0 }, // bottles diverted
+        description: { type: String, default: '' }
+      },
+      treeEquivalent: {
+        value: { type: Number, default: 0 }, // tree equivalent saved
+        description: { type: String, default: '' }
+      },
+      summary: { type: String, default: '' }, // AI-generated summary
+      confidence: { type: Number, min: 0, max: 1, default: 0 } // AI confidence score
     }
   },
   
@@ -221,25 +251,24 @@ const ProductSchema = new mongoose.Schema({
     },
     documentUrl: String
   }],
-  
-  // Impact per purchase (calculated automatically)
+    // Impact per purchase (calculated automatically based on AI insights)
   impactPerPurchase: {
     carbonSaved: { 
       type: Number,
       default: 0
-    }, // kg CO2 saved vs conventional alternative
+    }, // kg CO2 saved vs conventional alternative (from AI)
     waterSaved: { 
       type: Number,
       default: 0
-    },  // liters saved
+    },  // liters saved (from AI)
     wastePrevented: { 
       type: Number,
       default: 0
-    }, // kg waste prevented
+    }, // kg waste prevented (from AI)
     impactPoints: { 
       type: Number,
       default: 0
-    } // points earned per purchase
+    } // points earned per purchase (ecoScore/10 + bonus)
   },
   
   // Product status and inventory
@@ -430,36 +459,29 @@ ProductSchema.index({ price: 1 });
 ProductSchema.index({ createdAt: -1 });
 ProductSchema.index({ name: 'text', description: 'text' });
 
-// Pre-save middleware to calculate overall EcoScore
+// Pre-save middleware to calculate EcoScore tier and impact points
 ProductSchema.pre('save', function(next) {
-  if (this.isModified('ecoScore.components')) {
-    const components = this.ecoScore.components;
-    this.ecoScore.overall = 
-      (components.carbon || 0) +
-      (components.materials || 0) +
-      (components.packaging || 0) +
-      (components.social || 0) +
-      (components.lifecycle || 0) +
-      (components.certifications || 0);
-  }
-  next();
-});
-
-// Pre-save middleware to calculate impact per purchase
-ProductSchema.pre('save', function(next) {
-  if (this.isModified('ecoScore') || this.isModified('price')) {
-    const ecoScore = this.ecoScore.overall;
-    const price = this.price;
+  // Calculate tier based on overall score
+  if (this.ecoScore.overall !== undefined) {
+    const score = this.ecoScore.overall;
+    if (score >= 900) this.ecoScore.tier = '🌟 EcoChampion';
+    else if (score >= 750) this.ecoScore.tier = '🌿 EcoPioneer';
+    else if (score >= 600) this.ecoScore.tier = '🌱 EcoSelect';
+    else if (score >= 450) this.ecoScore.tier = '♻️ EcoAware';
+    else if (score >= 300) this.ecoScore.tier = '🌍 EcoEntry';
+    else this.ecoScore.tier = '⚠️ Standard';
     
-    // Calculate impact based on EcoScore and price
-    this.impactPerPurchase.carbonSaved = Math.round(ecoScore * 0.8); // kg CO2
-    this.impactPerPurchase.waterSaved = Math.round(ecoScore * 12); // liters
-    this.impactPerPurchase.wastePrevented = Math.round(ecoScore * 0.3); // kg
+    // Calculate impact points: ecoScore/10 + bonus points
+    const basePoints = Math.floor(this.ecoScore.overall / 10);
+    const bonusPoints = this.certifications.length * 5; // 5 bonus points per certification
+    this.impactPerPurchase.impactPoints = basePoints + bonusPoints;
     
-    // Calculate impact points: base points + EcoScore bonus
-    let basePoints = Math.round(price);
-    let ecoBonus = Math.round((ecoScore / 100) * basePoints);
-    this.impactPerPurchase.impactPoints = basePoints + ecoBonus;
+    // Use AI insights for impact values
+    if (this.ecoScore.aiInsights) {
+      this.impactPerPurchase.carbonSaved = this.ecoScore.aiInsights.carbonReduced.value || 0;
+      this.impactPerPurchase.waterSaved = this.ecoScore.aiInsights.waterSaved.value || 0;
+      this.impactPerPurchase.wastePrevented = this.ecoScore.aiInsights.wastePrevented.value || 0;
+    }
   }
   next();
 });

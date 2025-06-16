@@ -348,7 +348,198 @@ class GeminiAIService {
       return { message: text.trim() };
     } catch (error) {      console.error('Error generating collective impact message:', error);
       throw new Error('Failed to generate collective impact message');
+    }  }
+
+  /**
+   * Calculate EcoScore and generate environmental insights for a product
+   */
+  async calculateProductEcoScore(productData) {
+    try {
+      const prompt = `
+        As an AI sustainability expert for EcoSphere, analyze this product and provide a comprehensive EcoScore and environmental impact assessment.
+        
+        Product Information:
+        - Name: ${productData.companyName} - ${productData.productName}
+        - Category: ${productData.productCategory}
+        - Description: ${productData.productDescription}
+        
+        Environmental Data:
+        - Carbon Scope 1: ${productData.carbonScope1 || 'Not provided'} kg CO2
+        - Carbon Scope 2: ${productData.carbonScope2 || 'Not provided'} kg CO2  
+        - Carbon Scope 3: ${productData.carbonScope3 || 'Not provided'} kg CO2
+        - Renewable Energy: ${productData.renewableEnergyPercent || 0}%
+        - Water Usage: ${productData.waterUsagePerUnit || 'Not provided'} L/unit
+        - Waste Reduction: ${productData.wasteReductionPercent || 0}%
+        
+        Materials & Packaging:
+        - Recycled Content: ${productData.recycledContentPercent || 0}%
+        - Bio-based Content: ${productData.bioBasedContentPercent || 0}%
+        - Toxic Substances: ${productData.toxicSubstances || 'unknown'}
+        - Packaging Weight: ${productData.packagingWeight || 'Not provided'}g
+        - Packaging Recyclable: ${productData.packagingRecyclable || 'unknown'}
+        - Plastic-free Packaging: ${productData.plasticFreePackaging || false}
+        
+        Social Responsibility:
+        - Fair Labor Certified: ${productData.fairLaborCertified || false}
+        - Worker Safety Programs: ${productData.workerSafetyPrograms || false}
+        - Community Impact: ${productData.communityImpact || 'Not provided'}
+        - Supply Chain Transparency: ${productData.supplyChainTransparency || 'unknown'}
+        
+        Product Lifecycle:
+        - Expected Lifespan: ${productData.expectedLifespan || 'Not provided'} years
+        - Repairability: ${productData.repairability || 'unknown'}
+        - Take-back Program: ${productData.takeBackProgram || false}
+        - Disposal Guidance: ${productData.disposalGuidance || 'Not provided'}
+        
+        Certifications: ${productData.certifications?.length || 0} certifications
+        ${productData.certifications?.map(cert => `- ${cert}`).join('\n') || 'None provided'}
+        
+        Please provide:
+        1. Overall EcoScore (0-1000 scale) with detailed breakdown:
+           - Carbon Impact (0-250 points)
+           - Materials Impact (0-200 points) 
+           - Packaging Impact (0-150 points)
+           - Social Impact (0-150 points)
+           - Lifecycle Impact (0-150 points)
+           - Certifications Bonus (0-100 points)
+        
+        2. Environmental Impact Insights (specific quantified values):
+           - CO2 Reduced: kg CO2 saved vs conventional alternative
+           - Water Saved: liters saved in production/use
+           - Waste Prevented: kg waste prevented from landfill
+           - Ocean Plastic Diverted: equivalent bottles diverted
+           - Tree Equivalent: trees saved equivalent
+        
+        3. Confidence score (0-1) based on data completeness
+        4. Brief summary of sustainability strengths
+        
+        Format response as JSON:
+        {
+          "overallScore": 750,
+          "components": {
+            "carbon": 180,
+            "materials": 140,
+            "packaging": 120,
+            "social": 100,
+            "lifecycle": 110,
+            "certifications": 50
+          },
+          "insights": {
+            "carbonReduced": {
+              "value": 8.4,
+              "description": "8.4kg CO2 saved vs conventional plastic alternative"
+            },
+            "waterSaved": {
+              "value": 234,
+              "description": "234 liters saved in sustainable production process"
+            },
+            "wastePrevented": {
+              "value": 2.1,
+              "description": "2.1kg waste prevented from landfill through biodegradable materials"
+            },
+            "oceanPlasticDiverted": {
+              "value": 12,
+              "description": "Equivalent to 12 plastic bottles diverted from ocean"
+            },
+            "treeEquivalent": {
+              "value": 0.3,
+              "description": "0.3 tree equivalent saved through sustainable sourcing"
+            },
+            "summary": "High sustainability rating with excellent biodegradable materials and renewable energy usage",
+            "confidence": 0.85
+          }
+        }
+      `;
+
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      try {
+        // Extract JSON from response
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsedResponse = JSON.parse(jsonMatch[0]);
+          return {
+            success: true,
+            data: parsedResponse
+          };
+        } else {
+          throw new Error('No valid JSON found in response');
+        }
+      } catch (parseError) {
+        console.error('Failed to parse EcoScore response:', parseError);
+        // Return fallback calculation if AI parsing fails
+        return {
+          success: false,
+          fallback: this.calculateFallbackEcoScore(productData),
+          error: 'AI response parsing failed, using fallback calculation'
+        };
+      }
+      
+    } catch (error) {
+      console.error('Error calculating EcoScore:', error);
+      return {
+        success: false,
+        fallback: this.calculateFallbackEcoScore(productData),
+        error: error.message
+      };
     }
+  }
+
+  /**
+   * Fallback EcoScore calculation if AI fails
+   */
+  calculateFallbackEcoScore(productData) {
+    let score = 0;
+    
+    // Carbon Impact (0-250)
+    const renewablePercent = parseInt(productData.renewableEnergyPercent) || 0;
+    score += Math.min(250, (renewablePercent / 100) * 250);
+    
+    // Materials (0-200)
+    const recycledPercent = parseInt(productData.recycledContentPercent) || 0;
+    const bioBasedPercent = parseInt(productData.bioBasedContentPercent) || 0;
+    score += Math.min(150, (recycledPercent / 100) * 150);
+    score += Math.min(50, (bioBasedPercent / 100) * 50);
+    
+    // Packaging (0-150)
+    if (productData.plasticFreePackaging) score += 100;
+    if (productData.packagingRecyclable === 'yes') score += 50;
+    
+    // Social (0-150)
+    if (productData.fairLaborCertified) score += 75;
+    if (productData.workerSafetyPrograms) score += 75;
+    
+    // Lifecycle (0-150)
+    if (productData.takeBackProgram) score += 75;
+    const lifespan = parseInt(productData.expectedLifespan) || 0;
+    if (lifespan > 5) score += 75;
+    
+    // Certifications (0-100)
+    const certCount = productData.certifications?.length || 0;
+    score += Math.min(100, certCount * 20);
+    
+    return {
+      overallScore: Math.round(score),
+      components: {
+        carbon: Math.min(250, (renewablePercent / 100) * 250),
+        materials: Math.min(200, (recycledPercent / 100) * 150 + (bioBasedPercent / 100) * 50),
+        packaging: (productData.plasticFreePackaging ? 100 : 0) + (productData.packagingRecyclable === 'yes' ? 50 : 0),
+        social: (productData.fairLaborCertified ? 75 : 0) + (productData.workerSafetyPrograms ? 75 : 0),
+        lifecycle: (productData.takeBackProgram ? 75 : 0) + (lifespan > 5 ? 75 : 0),
+        certifications: Math.min(100, certCount * 20)
+      },
+      insights: {
+        carbonReduced: { value: Math.round(score * 0.01), description: "Estimated CO2 reduction vs conventional product" },
+        waterSaved: { value: Math.round(score * 0.3), description: "Estimated water savings in production" },
+        wastePrevented: { value: Math.round(score * 0.003), description: "Estimated waste prevented from landfill" },
+        oceanPlasticDiverted: { value: Math.round(score * 0.02), description: "Equivalent bottles diverted from ocean" },
+        treeEquivalent: { value: Math.round(score * 0.0005 * 10) / 10, description: "Tree equivalent saved" },
+        summary: "Fallback calculation based on basic sustainability metrics",
+        confidence: 0.6
+      }
+    };
   }
 
   /**
