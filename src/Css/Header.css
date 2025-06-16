@@ -1,4 +1,3 @@
-
 .header {
     height: 60px;
     display: flex;
@@ -89,3 +88,30 @@
     text-decoration: none;
     color: white;
   }
+
+  /* Authentication styles */
+.header__option.authenticated {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  border-radius: 4px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+}
+
+.header__option.authenticated:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-1px);
+}
+
+.header__option.authenticated .header__optionLineOne {
+  color: white;
+  font-weight: 500;
+}
+
+.header__option.authenticated .header__optionLineTwo {
+  color: #e8f5e8;
+  font-size: 9px;
+}
+
+.header__option[style*="cursor: pointer"] {
+  user-select: none;
+}

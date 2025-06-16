@@ -33,19 +33,18 @@ function Login() {
 
       if (response.ok) {
         const data = await response.json();
-        
-        if (userType === 'customer') {
+          if (userType === 'customer') {
           localStorage.setItem('ecoSphereToken', data.data.token);
           localStorage.setItem('ecoSphereUserType', 'user');
           localStorage.setItem('ecoSphereUser', JSON.stringify(data.data.user));
           alert(`Welcome back, ${data.data.user.name}! 🌱`);
-          navigate('/');
+          window.location.href = '/';
         } else if (userType === 'partner') {
           localStorage.setItem('ecoSphereToken', data.data.token);
           localStorage.setItem('ecoSphereUserType', 'partner');
           localStorage.setItem('ecoSpherePartner', JSON.stringify(data.data.partner));
           alert(`Welcome back, ${data.data.partner.companyName}! 🤝`);
-          navigate('/partner-hub');
+          window.location.href = '/partner-hub';
         }
         return;
       } else {

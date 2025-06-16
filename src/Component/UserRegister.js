@@ -57,19 +57,19 @@ function UserRegister() {
         }),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      const data = await response.json();      if (data.success) {
         // Store user data and token
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('userType', 'user');
+        localStorage.setItem('ecoSphereToken', data.data.token);
+        localStorage.setItem('ecoSphereUserType', 'user');
+        localStorage.setItem('ecoSphereUser', JSON.stringify(data.data.user));
         
         dispatch({
           type: 'SET_USER',
           user: data.data.user,
           userType: 'user'
         });        alert('Registration successful! Welcome to EcoSphere!');
-        navigate('/');
+        // Refresh the page to update header state
+        window.location.href = '/';
       } else {
         setError(data.message || 'Registration failed');
       }

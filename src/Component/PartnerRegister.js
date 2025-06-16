@@ -57,19 +57,19 @@ function PartnerRegister() {
         }),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      const data = await response.json();      if (data.success) {
         // Store partner data and token
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('userType', 'partner');
+        localStorage.setItem('ecoSphereToken', data.data.token);
+        localStorage.setItem('ecoSphereUserType', 'partner');
+        localStorage.setItem('ecoSpherePartner', JSON.stringify(data.data.partner));
         
         dispatch({
           type: 'SET_USER',
           user: data.data.partner,
           userType: 'partner'
         });        alert('Partner registration successful! Welcome to EcoSphere Partner Program!');
-        navigate('/partner-hub');
+        // Refresh the page to update header state
+        window.location.href = '/partner-hub';
       } else {
         setError(data.message || 'Registration failed');
       }
