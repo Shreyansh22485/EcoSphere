@@ -255,8 +255,7 @@ function EcoSphereImpact() {
         <h2 style={{textAlign: "center", color: "#2E7D32", marginBottom: "30px"}}>
           🏆 EcoSphere Leaderboards
         </h2>
-        
-        {/* Leaderboard Navigation */}
+          {/* Leaderboard Navigation */}
         <div style={{
           display: "flex",
           justifyContent: "center",
@@ -265,30 +264,73 @@ function EcoSphereImpact() {
           marginBottom: "30px"
         }}>
           {[
-            {key: 'daily', label: '⚡ Daily EcoHeroes'},
-            {key: 'weekly', label: '🔥 Weekly Warriors'},
-            {key: 'monthly', label: '👑 Monthly Masters'},
-            {key: 'groupBuying', label: '👥 Group Buying Gurus'},
-            {key: 'packaging', label: '📦 Packaging Patriots'},
-            {key: 'referral', label: '💫 Referral Rockstars'}
+            {key: 'daily', label: '⚡ Daily EcoHeroes', tooltip: 'Top daily Impact Points earners - refreshed every 24 hours'},
+            {key: 'weekly', label: '🔥 Weekly Warriors', tooltip: 'Consistent weekly performers - most sustainable choices over 7 days'},
+            {key: 'monthly', label: '👑 Monthly Masters', tooltip: 'Highest monthly accumulation - sustained environmental impact leaders'},
+            {key: 'groupBuying', label: '👥 Group Buying Gurus', tooltip: 'Most successful group purchases organized - community leaders driving collective buying power'},
+            {key: 'packaging', label: '📦 Packaging Patriots', tooltip: 'Highest return rates - champions of circular economy and packaging reuse'},
+            {key: 'referral', label: '💫 Referral Rockstars', tooltip: 'Most friends converted to sustainable shopping - EcoSphere community growth ambassadors'}
           ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveLeaderboard(tab.key)}
-              style={{
-                padding: "12px 20px",
-                borderRadius: "25px",
-                border: "none",
-                backgroundColor: activeLeaderboard === tab.key ? "#4CAF50" : "white",
-                color: activeLeaderboard === tab.key ? "white" : "#333",
-                fontWeight: "bold",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                boxShadow: activeLeaderboard === tab.key ? "0 4px 12px rgba(76, 175, 80, 0.3)" : "0 2px 8px rgba(0,0,0,0.1)"
-              }}
-            >
-              {tab.label}
-            </button>
+            <div key={tab.key} style={{ position: 'relative', display: 'inline-block' }}>
+              <button
+                onClick={() => setActiveLeaderboard(tab.key)}
+                style={{
+                  padding: "12px 20px",
+                  borderRadius: "25px",
+                  border: "none",
+                  backgroundColor: activeLeaderboard === tab.key ? "#4CAF50" : "white",
+                  color: activeLeaderboard === tab.key ? "white" : "#333",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: activeLeaderboard === tab.key ? "0 4px 12px rgba(76, 175, 80, 0.3)" : "0 2px 8px rgba(0,0,0,0.1)"
+                }}
+                onMouseEnter={(e) => {
+                  const tooltip = e.target.nextElementSibling;
+                  if (tooltip) tooltip.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  const tooltip = e.target.nextElementSibling;
+                  if (tooltip) tooltip.style.opacity = '0';
+                }}
+              >
+                {tab.label}
+              </button>
+              <div style={{
+                position: 'absolute',
+                top: '110%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: '#333',
+                color: 'white',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                whiteSpace: 'nowrap',
+                maxWidth: '300px',
+                whiteSpace: 'normal',
+                textAlign: 'center',
+                zIndex: 1000,
+                opacity: 0,
+                transition: 'opacity 0.3s ease',
+                pointerEvents: 'none',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                lineHeight: '1.4'
+              }}>
+                {tab.tooltip}
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 0,
+                  height: 0,
+                  borderLeft: '6px solid transparent',
+                  borderRight: '6px solid transparent',
+                  borderBottom: '6px solid #333'
+                }}></div>
+              </div>
+            </div>
           ))}
         </div>
 
