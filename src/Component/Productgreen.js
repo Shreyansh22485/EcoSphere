@@ -160,7 +160,7 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
               </div>
             )}
           </div>
-          <p className="eco_text">EcoTier Rating</p>
+          <p className="eco_text">EcoScore</p>
         </div>      </div>
       <Link to="/product" style={{ textDecoration: 'none', width: '100%' }}>
         <button style={{
