@@ -54,6 +54,7 @@ function App() {
           <Route path="/checkout" element={[<Header />, <Checkout/>, <Footer/>  ]}/>
           <Route path="/" element={[<Header />, <NavBar/>, <Home />, <Footer/>  ]}/>
           <Route path="/dashboard" element={[<Header />, <NavBarg/>, <Dashboard/>]} />
+          <Route path="/product/:id" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
           <Route path="/product" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
           <Route path="/product1" element={[<Headergreen />, <NavBarg />, <ProductDetails1 />, <Footer />]}/>
 

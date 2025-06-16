@@ -3,7 +3,7 @@ import "../Css/Productgreen.css";
 import { useStateValue } from "../StateProvider";
 import { Link } from "react-router-dom";
 
-function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
+function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsights }) {
   const [{ basket }, dispatch] = useStateValue();
 
   console.log("this is >>>>>", basket);
@@ -104,11 +104,16 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
         </div>
       </div>
       <img src={image} alt="" />
-      <div className="eco_details">
-        <div className="carbon_details">
+      <div className="eco_details">        <div className="carbon_details">
           <img src="../images/co2badge.png" alt="" className="eco_image"></img>
-          <p className="eco_text">{carbon_red}% Less Carbon Emission</p>
-        </div>        <div className="badge_details">
+          <p 
+            className="eco_text"
+            title={aiInsights?.carbonReduced?.description || "CO2 reduction compared to conventional alternatives"}
+            style={{cursor: "help"}}
+          >
+            {aiInsights?.carbonReduced?.value || carbon_red}kg CO2 Saved
+          </p>
+        </div><div className="badge_details">
           <div className="popover_trigger">
             <div
               id="ecoscoreToTrack"
@@ -141,10 +146,15 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
                   >
                     <h4 style={{margin: "0 0 10px 0", color: ecoscore_color}}>
                       {ecoscore_tier}: {ecoscore_text}
-                    </h4>
-                    <p style={{margin: "0", fontSize: "12px", color: "#666"}}>
+                    </h4>                    <p style={{margin: "0", fontSize: "12px", color: "#666"}}>
                       This product scores {ecoscore} out of 1000 on our sustainability metrics, 
                       including materials, manufacturing, packaging, and carbon footprint.
+                      {aiInsights?.summary && (
+                        <>
+                          <br /><br />
+                          <strong>Impact:</strong> {aiInsights.summary}
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -162,7 +172,7 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
           </div>
           <p className="eco_text">EcoScore</p>
         </div>      </div>
-      <Link to="/product" style={{ textDecoration: 'none', width: '100%' }}>
+      <Link to={`/product/${id}`} style={{ textDecoration: 'none', width: '100%' }}>
         <button style={{
           backgroundColor: "#4CAF50",
           color: "white",

@@ -120,3 +120,203 @@
   margin-left: 5px;
   color: #333; /* Choose a color for the discount text */
 }
+
+/* Impact metrics hover effects */
+.impact-metric {
+  cursor: help;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border: 1px solid #c8e6c9;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.impact-metric:hover {
+  background: linear-gradient(135deg, #c8e6c9 0%, #dcedc8 100%);
+  border-color: #4caf50;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  animation: eco-glow 1.5s ease-in-out infinite;
+}
+
+/* Tooltip styling for impact metrics */
+.impact-metric[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: normal;
+  white-space: normal;
+  max-width: 280px;
+  width: max-content;
+  text-align: center;
+  line-height: 1.4;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border: 2px solid #4caf50;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+
+.impact-metric[title]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 112%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: #1b5e20;
+  z-index: 1001;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Enhanced tooltip positioning for screen edges */
+.impact-metric:nth-child(1)[title]:hover::after,
+.impact-metric:nth-child(2)[title]:hover::after {
+  left: 0;
+  transform: translateX(0);
+}
+
+.impact-metric:nth-last-child(1)[title]:hover::after,
+.impact-metric:nth-last-child(2)[title]:hover::after {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
+}
+
+.impact-metric:nth-child(1)[title]:hover::before,
+.impact-metric:nth-child(2)[title]:hover::before {
+  left: 20px;
+  transform: translateX(0);
+}
+
+.impact-metric:nth-last-child(1)[title]:hover::before,
+.impact-metric:nth-last-child(2)[title]:hover::before {
+  left: auto;
+  right: 20px;
+  transform: translateX(0);
+}
+
+/* Tooltip fade-in animation */
+.impact-metric[title]::after,
+.impact-metric[title]::before {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.impact-metric[title]:hover::after,
+.impact-metric[title]:hover::before {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* AI insights summary styling */
+.ai-insights-summary {
+  background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
+  border: 2px solid #4caf50;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #1b5e20;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-insights-summary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #4caf50, #8bc34a, #cddc39);
+}
+
+.ai-insights-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2e7d32;
+  font-size: 16px;
+}
+
+.ai-insights-title::before {
+  content: '🤖';
+  font-size: 18px;
+}
+
+.ai-insights-text {
+  font-style: italic;
+  border-left: 4px solid #4caf50;
+  padding-left: 12px;
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+  position: relative;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+  .impact-metric[title]:hover::after {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    max-width: 90vw;
+    width: auto;
+    white-space: normal;
+    text-align: center;
+    font-size: 14px;
+    padding: 16px 20px;
+    border-radius: 16px;
+    line-height: 1.5;
+  }
+  
+  .impact-metric[title]:hover::before {
+    position: fixed;
+    bottom: 72px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: #1b5e20;
+  }
+  
+  .ai-insights-summary {
+    margin: 15px 10px;
+    padding: 12px;
+  }
+  
+  .ai-insights-title {
+    font-size: 14px;
+  }
+}
+
+/* Additional eco-themed animations */
+@keyframes eco-glow {
+  0% {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  }
+}

@@ -20,20 +20,17 @@ const getProducts = asyncHandler(async (req, res) => {
     page = 1,
     limit = 20
   } = req.query;
-
-  // Build query
-  let query = { status: 'active' };
+  // Build query - include both active and pending_review products for testing
+  let query = { status: { $in: ['active', 'pending_review'] } };
   
   if (category) query.category = category;
   if (minEcoScore) query['ecoScore.overall'] = { ...query['ecoScore.overall'], $gte: parseInt(minEcoScore) };
   if (maxEcoScore) query['ecoScore.overall'] = { ...query['ecoScore.overall'], $lte: parseInt(maxEcoScore) };
   if (minPrice) query.price = { ...query.price, $gte: parseFloat(minPrice) };
-  if (maxPrice) query.price = { ...query.price, $lte: parseFloat(maxPrice) };
-
-  // Execute query with pagination
+  if (maxPrice) query.price = { ...query.price, $lte: parseFloat(maxPrice) };  // Execute query with pagination
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const products = await Product.find(query)
-    .populate('partner', 'businessName sustainabilityRating')
+    .populate('partner', 'companyName') // Only populate companyName
     .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
     .skip(skip)
     .limit(parseInt(limit));
@@ -57,7 +54,7 @@ const getProducts = asyncHandler(async (req, res) => {
  */
 const getProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id)
-    .populate('partner', 'businessName sustainabilityRating location');
+    .populate('partner', 'companyName'); // Only populate companyName
 
   if (!product) {
     return res.status(404).json({
@@ -318,7 +315,7 @@ function getEcoTier(score) {
 const searchProducts = asyncHandler(async (req, res) => {
   const { query, category, minEcoScore, maxPrice, limit = 20 } = req.body;
 
-  let searchQuery = { status: 'active' };
+  let searchQuery = { status: { $in: ['active', 'pending_review'] } };
   
   // Text search
   if (query) {
@@ -329,9 +326,8 @@ const searchProducts = asyncHandler(async (req, res) => {
   if (category) searchQuery.category = category;
   if (minEcoScore) searchQuery['ecoScore.overall'] = { $gte: parseInt(minEcoScore) };
   if (maxPrice) searchQuery.price = { $lte: parseFloat(maxPrice) };
-
   const products = await Product.find(searchQuery)
-    .populate('partner', 'businessName')
+    .populate('partner', 'companyName')
     .limit(parseInt(limit))
     .sort(query ? { score: { $meta: 'textScore' } } : { 'ecoScore.overall': -1 });
 

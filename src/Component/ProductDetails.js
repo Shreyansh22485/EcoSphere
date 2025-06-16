@@ -1,74 +1,124 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../Css/ProductDetails.css";
 import { FaTruck } from "react-icons/fa";
 import { FaAmazonPay } from "react-icons/fa";
 import { GiCheckedShield, GiLaurelsTrophy } from "react-icons/gi";
 import { useStateValue } from "../StateProvider";
+import { useParams } from "react-router-dom";
 
 function ProductDetails() {
-  const [selectedImage, setSelectedImage] = useState("../images/Straw2.png");
+  const { id } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState("");
   const [{ basket }, dispatch] = useStateValue();
 
-  const addToBasket = (id, title, image, price, rating, ecoscore) => {
+  useEffect(() => {
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/products/${id}`);
+      
+      if (!response.ok) {
+        throw new Error('Product not found');
+      }
+      
+      const data = await response.json();
+      setProduct(data.data);
+      setSelectedImage(data.data.images?.[0]?.url || "../images/eco-placeholder.jpg");
+    } catch (err) {
+      console.error('Error fetching product:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const addToBasket = () => {
+    if (!product) return;
+    
     dispatch({
       type: "ADD_TO_BASKET",
       item: {
-        id,
-        title,
-        image,
-        price,
-        rating,
-        ecoscore,
+        id: product._id,
+        title: product.name,
+        image: product.images?.[0]?.url || "../images/eco-placeholder.jpg",
+        price: product.price,
+        rating: Math.round(product.metrics?.averageRating || 4),
+        ecoscore: product.ecoScore?.overall || 0,
       },
     });
   };
-
-  const imageArray = [
-    "../images/Straw1.png",
-    "../images/Straw2.png",
-    "../images/Straw3.png",
-    "../images/Straw4.png",
-  ];
 
   const handleImageClick = (image) => {
     setSelectedImage(image);
   };
 
+  if (loading) {
+    return (
+      <div style={{textAlign: 'center', padding: '100px', fontSize: '18px', color: '#4CAF50'}}>
+        🌱 Loading product details...
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div style={{textAlign: 'center', padding: '100px', fontSize: '16px', color: '#ff0000'}}>
+        ❌ Error: {error || 'Product not found'}
+        <br />
+        <button onClick={() => window.history.back()} style={{marginTop: '20px', padding: '10px 20px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}>
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  // Calculate impact points based on EcoScore
+  const impactPoints = Math.floor((product.ecoScore?.overall || 0) / 10) + (product.certifications?.length || 0) * 5;
+
   return (
-    <div className="whole">
-      <div className="img">
+    <div className="whole">      <div className="img">
         <div className="image-slider">
           <div className="image-thumbnails">
-            {imageArray.map((image, index) => (
+            {product.images && product.images.map((imageObj, index) => (
               <img
                 key={index}
-                src={image}
-                alt={`Image ${index}`}
+                src={imageObj.url}
+                alt={imageObj.alt || `Image ${index + 1}`}
                 className={`thumbnail ${
-                  selectedImage === image ? "selected" : ""
+                  selectedImage === imageObj.url ? "selected" : ""
                 }`}
-                onClick={() => handleImageClick(image)}
+                onClick={() => handleImageClick(imageObj.url)}
               />
             ))}
+            {(!product.images || product.images.length === 0) && (
+              <img
+                src="../images/eco-placeholder.jpg"
+                alt="Product placeholder"
+                className="thumbnail selected"
+              />
+            )}
           </div>
         </div>
         <div className="large-image">
-          {selectedImage && <img src={selectedImage} alt="Selected Image" />}
+          <img src={selectedImage} alt="Selected Product Image" />
         </div>
-      </div>
-
-      <div className="img-desc">
-        <h2>
-          Qudrat Natural Straw | Coconut Leaf | Biodegradable, Eco-Friendly &
-          Sustainable Drinking Straws (Pack of 100)
-        </h2>
-        <p>⭐⭐⭐⭐ (23 reviews)</p>
+      </div>      <div className="img-desc">
+        <h2>{product.name}</h2>
+        <p>{'⭐'.repeat(Math.round(product.metrics?.averageRating || 4))} ({product.metrics?.reviewCount || 0} reviews)</p>
         <br></br>
         <p className="price">
-          <span className="discounted-price">$15.35</span>
-          <span className="original-price">$18.99</span>
+          <span className="discounted-price">${product.price}</span>
+          {/* Add original price logic if needed */}
         </p>
-        <br></br>        <div className="eco_details">
+        <br></br>
+        <div className="eco_details">
           <div className="impact_points_section" style={{
             backgroundColor: "#e8f5e8",
             padding: "20px",
@@ -77,30 +127,73 @@ function ProductDetails() {
             border: "2px solid #4CAF50"
           }}>
             <div style={{fontSize: "18px", fontWeight: "bold", color: "#2e7d32", marginBottom: "15px"}}>
-              💎 Earn 85 Impact Points with this purchase
+              💎 Earn {impactPoints} Impact Points with this purchase
             </div>
-            
-            <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginBottom: "10px"}}>
+              <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginBottom: "10px"}}>
               🌍 Your Environmental Impact:
-            </div>
-            <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
-              <div>├── 🌱 CO2 Reduced: 8.4kg vs conventional product</div>
-              <div>├── 💧 Water Saved: 234 liters in production</div>
-              <div>├── ♻️ Waste Prevented: 2.1kg from landfill</div>
-              <div>├── 🌊 Ocean Plastic: 12 bottles diverted</div>
-              <div>└── 🌳 Tree Equivalent: 0.3 trees saved</div>
+            </div>            <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
+              <div 
+                className="impact-metric"
+                title={product.ecoScore?.aiInsights?.carbonReduced?.description || "CO2 reduction compared to conventional alternatives"}
+              >
+                ├── 🌱 CO2 Reduced: {product.ecoScore?.aiInsights?.carbonReduced?.value || 0}kg vs conventional product
+              </div>
+              <div 
+                className="impact-metric"
+                title={product.ecoScore?.aiInsights?.waterSaved?.description || "Water saved in production process"}
+              >
+                ├── 💧 Water Saved: {product.ecoScore?.aiInsights?.waterSaved?.value || 0} liters in production
+              </div>
+              <div 
+                className="impact-metric"
+                title={product.ecoScore?.aiInsights?.wastePrevented?.description || "Waste prevented from reaching landfill"}
+              >
+                ├── ♻️ Waste Prevented: {product.ecoScore?.aiInsights?.wastePrevented?.value || 0}kg from landfill
+              </div>
+              <div 
+                className="impact-metric"
+                title={product.ecoScore?.aiInsights?.oceanPlasticDiverted?.description || "Ocean plastic bottles diverted"}
+              >
+                ├── 🌊 Ocean Plastic: {product.ecoScore?.aiInsights?.oceanPlasticDiverted?.value || 0} bottles diverted
+              </div>
+              <div 
+                className="impact-metric"
+                title={product.ecoScore?.aiInsights?.treeEquivalent?.description || "Tree equivalent saved through sustainable practices"}
+              >
+                └── 🌳 Tree Equivalent: {product.ecoScore?.aiInsights?.treeEquivalent?.value || 0} trees saved
+              </div>
             </div>
 
-            <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginTop: "15px", marginBottom: "10px"}}>
-              👥 Group Buy Impact Multiplier:
-            </div>
-            <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
-              <div>├── Individual Impact: 8.4kg CO2 saved</div>
-              <div>├── Group Impact: 168kg CO2 saved (20 people)</div>
-              <div>├── Shipping Reduction: Additional 15kg CO2 saved</div>
-              <div>└── Total Group Benefit: 183kg CO2 prevented</div>
-            </div>            <div style={{
-              backgroundColor: "#4CAF50",
+            {/* AI Insights Summary */}
+            {product.ecoScore?.aiInsights?.summary && (
+              <div className="ai-insights-summary">
+                <div className="ai-insights-title">
+                  AI Impact Analysis:
+                </div>
+                <div className="ai-insights-text">
+                  "{product.ecoScore?.aiInsights?.summary}"
+                </div>
+              </div>
+            )}
+
+            {product.groupBuying?.enabled && (
+              <>
+                <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginTop: "15px", marginBottom: "10px"}}>
+                  👥 Group Buy Impact Multiplier:
+                </div>
+                <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
+                  <div>├── Individual Impact: {product.ecoScore?.aiInsights?.carbonReduced?.value || 0}kg CO2 saved</div>
+                  <div>└── Group Impact: {((product.ecoScore?.aiInsights?.carbonReduced?.value || 0) * (product.groupBuying?.minQuantity || 1)).toFixed(1)}kg CO2 saved ({product.groupBuying?.minQuantity || 1} people)</div>
+                </div>
+              </>
+            )}
+
+            <div style={{
+              backgroundColor: product.ecoScore?.tier?.includes('Champion') ? "#006400" : 
+                            product.ecoScore?.tier?.includes('Pioneer') ? "#228B22" :
+                            product.ecoScore?.tier?.includes('Select') ? "#32CD32" :
+                            product.ecoScore?.tier?.includes('Aware') ? "#FFD700" :
+                            product.ecoScore?.tier?.includes('Entry') ? "#FF8C00" : "#FF0000",
               color: "white",
               padding: "10px",
               borderRadius: "8px",
@@ -109,23 +202,18 @@ function ProductDetails() {
               fontSize: "14px",
               fontWeight: "bold"
             }}>
-              🌿 EcoPioneer: 875/1000 - Excellent Sustainability Rating
+              {product.ecoScore?.tier || '⚠️ Standard'}: {product.ecoScore?.overall || 0}/1000 - {
+                (product.ecoScore?.overall || 0) >= 900 ? 'Outstanding' :
+                (product.ecoScore?.overall || 0) >= 750 ? 'Excellent' :
+                (product.ecoScore?.overall || 0) >= 600 ? 'Very Good' :
+                (product.ecoScore?.overall || 0) >= 450 ? 'Good' :
+                (product.ecoScore?.overall || 0) >= 300 ? 'Fair' : 'Needs Improvement'
+              } Sustainability Rating
             </div>
           </div>
         </div>
         <br></br>
-        <p>
-          Our innovative Quadrat straws offer an exceptional eco-friendly
-          solution for all your beverage needs. Made from fallen coconut leaves,
-          these straws are not only biodegradable but also act as a natural
-          fertilizer when buried in garden soil, enhancing its quality in just
-          30 days. They are not only kind to the environment but also
-          long-lasting, capable of withstanding both hot and cold beverages
-          without breaking or getting soggy. Their temperature range spans from
-          a minimum of 32°F / 0°C to a maximum of 302°F / 150°C. Quadrat straws
-          are a sustainable alternative to paper or plastic straws, working like
-          plastic but feeling entirely natural.
-        </p>
+        <p>{product.description}</p>
         <br></br>
         <div className="icons">
           <div className="icon">
@@ -167,30 +255,24 @@ function ProductDetails() {
             width: "100%",
             marginBottom: "10px"
           }}
-          onClick={() =>
-            addToBasket(
-              "875617",
-              "Qudrat Natural Straw | Coconut Leaf | Biodegradable, Eco-Friendly & Sustainable Drinking Straws (Pack of 100)",
-              "../images/straw_eco.jpg",
-              8.99,
-              4,
-              875
-            )
-          }        >
-          Buy with IMPACT (+85 Impact Points)
+          onClick={addToBasket}
+        >
+          Buy with IMPACT (+{impactPoints} Impact Points)
         </button>
         
-        <div style={{
-          backgroundColor: "#f3e5f5",
-          padding: "15px",
-          borderRadius: "8px",
-          marginTop: "10px",
-          fontSize: "14px",
-          color: "#6a1b9a",
-          textAlign: "center"
-        }}>
-          🎯 Join Group Buy for 2x Impact Points & Better Pricing!
-        </div>
+        {product.groupBuying?.enabled && (
+          <div style={{
+            backgroundColor: "#f3e5f5",
+            padding: "15px",
+            borderRadius: "8px",
+            marginTop: "10px",
+            fontSize: "14px",
+            color: "#6a1b9a",
+            textAlign: "center"
+          }}>
+            🎯 Join Group Buy for 2x Impact Points & Better Pricing! (Min: {product.groupBuying.minQuantity} items)
+          </div>
+        )}
       </div>
     </div>
   );
