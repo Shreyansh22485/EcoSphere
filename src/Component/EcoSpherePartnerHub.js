@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./EcoSpherePartnerHub.css";
-import { Link } from "react-router-dom";
 
 function EcoSpherePartnerHub() {
   const [currentStep, setCurrentStep] = useState(1);
   const [mode, setMode] = useState('simplified'); // 'simplified' or 'advanced'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
+
   const [formData, setFormData] = useState({
     // Basic Information
     companyName: "",
     productName: "",
     productCategory: "",
     productDescription: "",
+    price: "", // Add price field
     
     // Environmental Impact
     carbonScope1: "",
@@ -41,11 +42,18 @@ function EcoSpherePartnerHub() {
     repairability: "",
     takeBackProgram: false,
     disposalGuidance: "",
-    
-    // Certifications
+      // Certifications
     certifications: [],
-    certificationFiles: []
+    certificationFiles: [],
+    
+    // Group Buying Options
+    groupBuyingEnabled: false,
+    groupBuyingMinQuantity: "",
+    groupBuyingDiscountTiers: []
   });
+  // Add state for image uploads
+  const [productImages, setProductImages] = useState([]);
+  const [imagePreview, setImagePreview] = useState([]);
 
   const totalSteps = mode === 'simplified' ? 4 : 6;
 
@@ -59,7 +67,6 @@ function EcoSpherePartnerHub() {
       [name]: type === 'checkbox' ? checked : value
     }));
   };
-
   const handleCertificationChange = (cert, isChecked) => {
     setFormData(prev => ({
       ...prev,
@@ -67,7 +74,32 @@ function EcoSpherePartnerHub() {
         ? [...prev.certifications, cert]
         : prev.certifications.filter(c => c !== cert)
     }));
-  };  const nextStep = (e) => {
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 10) {
+      alert('Maximum 10 images allowed');
+      return;
+    }
+    
+    // Update the productImages state
+    setProductImages(files);
+    
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagePreview(previews);
+  };
+
+  const removeImage = (index) => {
+    const newImages = productImages.filter((_, i) => i !== index);
+    const newPreviews = imagePreview.filter((_, i) => i !== index);
+    
+    setProductImages(newImages);
+    setImagePreview(newPreviews);
+  };
+
+  const nextStep = (e) => {
     e.preventDefault(); // Prevent form submission
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -79,8 +111,7 @@ function EcoSpherePartnerHub() {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
-  const handleSubmit = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
@@ -88,12 +119,28 @@ function EcoSpherePartnerHub() {
     try {
       console.log('🚀 Submitting product to EcoSphere API...');
       
+      // Create FormData for file upload
+      const formDataToSend = new FormData();
+      
+      // Add all form fields
+      Object.keys(formData).forEach(key => {
+        if (key === 'certifications' && Array.isArray(formData[key])) {
+          formData[key].forEach(cert => {
+            formDataToSend.append('certifications[]', cert);
+          });
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
+      // Add product images
+      productImages.forEach((image, index) => {
+        formDataToSend.append('productImages', image);
+      });
+      
       const response = await fetch(`${process.env.REACT_APP_API_URL}/products`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
+        body: formDataToSend // Don't set Content-Type header - let browser set it for FormData
       });
       
       const result = await response.json();
@@ -187,8 +234,7 @@ function EcoSpherePartnerHub() {
                   <option value="toys-games">Toys & Games</option>
                   <option value="other">Other</option>
                 </select>
-              </div>
-              <div className="form-group full-width">
+              </div>              <div className="form-group full-width">
                 <label>Product Description *</label>
                 <textarea
                   name="productDescription"
@@ -197,6 +243,43 @@ function EcoSpherePartnerHub() {
                   rows="3"
                   required
                 />
+              </div>
+              <div className="form-group">
+                <label>Price ($) *</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+              <div className="form-group full-width">
+                <label>Product Images (Max 10)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="file-input"
+                />
+                <div className="image-preview-container">
+                  {imagePreview.map((preview, index) => (
+                    <div key={index} className="image-preview">
+                      <img src={preview} alt={`Preview ${index + 1}`} />
+                      <button 
+                        type="button" 
+                        className="remove-image"
+                        onClick={() => removeImage(index)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -400,8 +483,7 @@ function EcoSpherePartnerHub() {
                   <option value="limited">Limited transparency</option>
                   <option value="none">No transparency</option>
                 </select>
-              </div>
-              <div className="form-group full-width">
+              </div>              <div className="form-group full-width">
                 <label>Community Impact Description</label>
                 <textarea
                   name="communityImpact"
@@ -411,6 +493,38 @@ function EcoSpherePartnerHub() {
                   placeholder="Describe how your product/company benefits local communities..."
                 />
               </div>
+              
+              {/* Group Buying Options */}
+              <div className="form-group full-width">
+                <h4>📊 Group Buying Options (Optional)</h4>
+                <div className="checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="groupBuyingEnabled"
+                      checked={formData.groupBuyingEnabled}
+                      onChange={handleInputChange}
+                    />
+                    Enable Group Buying for this product
+                  </label>
+                  <small>Allow customers to get discounts by buying in groups</small>
+                </div>
+              </div>
+              
+              {formData.groupBuyingEnabled && (
+                <div className="form-group">
+                  <label>Minimum Quantity for Group Buying</label>
+                  <input
+                    type="number"
+                    name="groupBuyingMinQuantity"
+                    value={formData.groupBuyingMinQuantity}
+                    onChange={handleInputChange}
+                    min="2"
+                    placeholder="e.g., 5"
+                  />
+                  <small>Minimum number of items needed to start a group buy</small>
+                </div>
+              )}
             </div>
           </div>
         );

@@ -409,9 +409,8 @@ class GeminiAIService {
            - Waste Prevented: kg waste prevented from landfill
            - Ocean Plastic Diverted: equivalent bottles diverted
            - Tree Equivalent: trees saved equivalent
-        
-        3. Confidence score (0-1) based on data completeness
-        4. Brief summary of sustainability strengths
+          3. Confidence score (0-1) based on data completeness
+        4. One-liner describing the positive ecosystem impact when a user buys this product
         
         Format response as JSON:
         {
@@ -445,7 +444,7 @@ class GeminiAIService {
               "value": 0.3,
               "description": "0.3 tree equivalent saved through sustainable sourcing"
             },
-            "summary": "High sustainability rating with excellent biodegradable materials and renewable energy usage",
+            "summary": "Every purchase saves 8.4kg CO2, 234L water, and prevents 2.1kg waste - helping restore our planet one product at a time",
             "confidence": 0.85
           }
         }

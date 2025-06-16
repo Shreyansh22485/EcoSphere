@@ -85,9 +85,22 @@ const createProduct = asyncHandler(async (req, res) => {
   console.log('🔄 Processing new product submission...');
   
   const productFormData = req.body;
+  const uploadedFiles = req.files; // Multer uploaded files
   
   try {
-    // Step 1: Calculate EcoScore and generate AI insights
+    // Step 1: Process uploaded images
+    console.log('📸 Processing uploaded images...');
+    let images = [];
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      images = uploadedFiles.map((file, index) => ({
+        url: file.path, // Cloudinary URL
+        alt: `${productFormData.productName} - Image ${index + 1}`,
+        isPrimary: index === 0 // First image is primary
+      }));
+      console.log(`✅ Processed ${images.length} images`);
+    }
+    
+    // Step 2: Calculate EcoScore and generate AI insights
     console.log('🤖 Generating AI EcoScore and insights...');
     const aiAnalysis = await geminiAI.calculateProductEcoScore(productFormData);
     
@@ -141,15 +154,14 @@ const createProduct = asyncHandler(async (req, res) => {
         })),
         status: 'pending'
       });
-    }
-
-    // Step 3: Create product with AI-generated data
+    }    // Step 3: Create product with AI-generated data
     console.log('📦 Creating product in database...');
     const product = await Product.create({
       name: productFormData.productName,
       description: productFormData.productDescription,
       price: parseFloat(productFormData.price) || 0,
       category: productFormData.productCategory,
+      images: images, // Add uploaded images
       partner: partner._id,
       
       // AI-generated EcoScore data
@@ -191,22 +203,59 @@ const createProduct = asyncHandler(async (req, res) => {
           supplyChainTransparency: productFormData.supplyChainTransparency || 'limited'
         }
       },
-      
-      // Certifications
+        // Certifications
       certifications: (productFormData.certifications || []).map(cert => ({
         name: cert,
         issuedBy: 'Various',
         verificationStatus: 'pending'
       })),
       
+      // Group buying configuration
+      groupBuying: {
+        enabled: productFormData.groupBuyingEnabled === 'true' || 
+                productFormData.groupBuyingEnabled === true,
+        minQuantity: parseInt(productFormData.groupBuyingMinQuantity) || 1,
+        discountTiers: productFormData.groupBuyingDiscountTiers || [],
+        currentGroupSize: 0
+      },
+      
       status: 'pending_review',
       inventory: {
         stock: 0, // Will be updated when approved
         lowStockThreshold: 10
       }
-    });
-
-    console.log('✅ Product created successfully with EcoScore:', ecoScoreData.overallScore);
+    });// Step 4: Update Partner's total impact generated
+    console.log('📊 Updating partner impact metrics...');
+    const productImpact = ecoScoreData.insights;
+    
+    // Calculate impact points based on EcoScore (1 point per 10 EcoScore points)
+    const impactPoints = Math.floor(ecoScoreData.overallScore / 10);
+    
+    // Check if group buying is enabled for this product
+    const isGroupBuyingEnabled = productFormData.groupBuyingEnabled === 'true' || 
+                                productFormData.groupBuyingEnabled === true;
+    
+    // Update partner metrics
+    const partnerUpdate = {
+      $inc: {
+        'totalImpactGenerated.carbonSaved': productImpact.carbonReduced?.value || 0,
+        'totalImpactGenerated.waterSaved': productImpact.waterSaved?.value || 0,
+        'totalImpactGenerated.wastePrevented': productImpact.wastePrevented?.value || 0,
+        'totalImpactGenerated.pointsAwarded': impactPoints,
+        'metrics.totalProducts': 1
+      }
+    };
+    
+    // Only increment productsEnabled if group buying is enabled
+    if (isGroupBuyingEnabled) {
+      partnerUpdate.$inc['totalImpactGenerated.productsEnabled'] = 1;
+    }
+    
+    await Partner.findByIdAndUpdate(partner._id, partnerUpdate);    console.log('✅ Product created successfully with EcoScore:', ecoScoreData.overallScore);
+    console.log(`✅ Partner impact metrics updated - ${impactPoints} points awarded`);
+    if (isGroupBuyingEnabled) {
+      console.log('✅ Group buying enabled - productsEnabled count incremented');
+    }
 
     res.status(201).json({
       success: true,
@@ -217,12 +266,19 @@ const createProduct = asyncHandler(async (req, res) => {
           name: product.name,
           ecoScore: product.ecoScore.overall,
           tier: product.ecoScore.tier,
-          impactPoints: product.impactPerPurchase.impactPoints,
+          impactPoints: impactPoints,
           status: product.status
         },
         partner: {
           id: partner._id,
-          name: partner.businessName
+          name: partner.companyName,
+          totalImpact: {
+            carbonSaved: (partner.totalImpactGenerated.carbonSaved || 0) + (productImpact.carbonReduced?.value || 0),
+            waterSaved: (partner.totalImpactGenerated.waterSaved || 0) + (productImpact.waterSaved?.value || 0),
+            wastePrevented: (partner.totalImpactGenerated.wastePrevented || 0) + (productImpact.wastePrevented?.value || 0),
+            productsEnabled: (partner.totalImpactGenerated.productsEnabled || 0) + 1,
+            pointsAwarded: (partner.totalImpactGenerated.pointsAwarded || 0) + impactPoints
+          }
         },
         aiAnalysis: {
           success: aiAnalysis.success,

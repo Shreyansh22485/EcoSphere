@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { upload } = require('../config/cloudinary');
 const {
   getProducts,
   getProduct,
@@ -9,7 +10,7 @@ const {
 
 // Product routes
 router.get('/', getProducts);
-router.post('/', createProduct);
+router.post('/', upload.array('productImages', 10), createProduct);
 router.post('/search', searchProducts);
 
 // Specific routes should come before generic /:id route
