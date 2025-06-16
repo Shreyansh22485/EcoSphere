@@ -4,6 +4,7 @@ import { TbTruckDelivery } from "react-icons/tb";
 import { FaAmazonPay } from "react-icons/fa";
 import { GiCheckedShield, GiLaurelsTrophy } from "react-icons/gi";
 import { useStateValue } from "../StateProvider";
+import { Link } from "react-router-dom";
 
 function ProductDetails1() {
   const [selectedImage, setSelectedImage] = useState("../images/Bag1.png");
@@ -68,27 +69,63 @@ function ProductDetails1() {
           <span className="discounted-price">$13.96</span>
           <span className="original-price">$19.95</span>
         </p>
-        <br></br>
-
-        <div className="eco_details">
-          <div className="carbon_details">
-            <img
-              src="../images/co2badge.png"
-              alt=""
-              className="eco_image"
-            ></img>
-            <p className="eco_text">60% Less Carbon Emission</p>
-          </div>
-          <div className="badge_details">
-            <div className="popover_trigger">
-              <img
-                id="badgeToTrack"
-                src="../images/badge5.png"
-                alt=""
-                className="eco_image"
-              ></img>
+        <br></br>        <div className="eco_details">
+          <div style={{
+            backgroundColor: "#fff3e0",
+            padding: "20px",
+            borderRadius: "12px",
+            marginBottom: "20px",
+            border: "2px solid #ff9800"
+          }}>
+            <div style={{fontSize: "18px", fontWeight: "bold", color: "#e65100", marginBottom: "15px"}}>
+              ⚠️ EcoSphere Alternative Available
             </div>
-            <p className="eco_text">Eco-Friendly Badge</p>
+            
+            <div style={{
+              backgroundColor: "#ffebee",
+              padding: "15px",
+              borderRadius: "8px",
+              marginBottom: "15px",
+              border: "1px solid #f44336"
+            }}>
+              <div style={{fontSize: "16px", fontWeight: "bold", color: "#c62828", marginBottom: "10px"}}>
+                🔻 Impact Point Deductions:
+              </div>
+              <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#d32f2f"}}>
+                <div>├── First Alternative Ignored: -10 points + warning</div>
+                <div>├── Second Alternative Ignored: -20 points + education</div>
+                <div>└── Pattern of Ignoring: -50 points + intervention</div>
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: "#e8f5e8",
+              padding: "15px",
+              borderRadius: "8px",
+              marginBottom: "15px",
+              border: "1px solid #4CAF50"
+            }}>
+              <div style={{fontSize: "16px", fontWeight: "bold", color: "#2e7d32", marginBottom: "10px"}}>
+                🌍 Missed Environmental Benefits:
+              </div>
+              <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#388e3c"}}>
+                <div>├── 🌱 CO2 Not Reduced: 8.4kg extra emissions</div>
+                <div>├── 💧 Water Wasted: 234 liters unnecessarily used</div>
+                <div>├── ♻️ Waste Created: 2.1kg to landfill</div>
+                <div>├── 🌊 Ocean Impact: 12 bottles not diverted</div>
+                <div>└── 🌳 Trees: 0.3 tree equivalent not saved</div>
+              </div>
+            </div>            <div style={{
+              backgroundColor: "#fff8e1",
+              padding: "15px",
+              borderRadius: "8px",
+              textAlign: "center",
+              fontSize: "14px",
+              color: "#f57c00",
+              fontWeight: "bold"
+            }}>
+              💡 Switch to Buy with IMPACT to earn +85 Impact Points instead!
+            </div>
           </div>
         </div>
         <br></br>
@@ -131,10 +168,20 @@ function ProductDetails1() {
           </p>
         </div>
         <br />
-        <br />
-
-        <button
+        <br />        <button
           className="addtocart"
+          style={{
+            backgroundColor: "#ff5722",
+            color: "white",
+            border: "none",
+            padding: "15px 30px",
+            fontSize: "16px",
+            fontWeight: "bold",
+            borderRadius: "8px",
+            cursor: "pointer",
+            width: "100%",
+            marginBottom: "10px"
+          }}
           onClick={() =>
             addToBasket(
               "875615",
@@ -142,12 +189,40 @@ function ProductDetails1() {
               "../images/bag_eco.jpg",
               15.35,
               4,
-              4
+              720
             )
-          }
-        >
-          Add to Cart
+          }        >
+          Add to Cart (-10 Impact Points)
         </button>
+          <Link to="/product" style={{textDecoration: "none"}}>
+          <button
+            style={{
+              backgroundColor: "#4CAF50",
+              color: "white",
+              border: "none",
+              padding: "15px 30px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              borderRadius: "8px",
+              cursor: "pointer",
+              width: "100%",
+              marginTop: "10px"
+            }}
+          >
+            🌱 Buy with IMPACT (+85 Points)
+          </button>
+        </Link>
+          <div style={{
+          backgroundColor: "#f3e5f5",
+          padding: "15px",
+          borderRadius: "8px",
+          marginTop: "15px",
+          fontSize: "14px",
+          color: "#6a1b9a",
+          textAlign: "center"
+        }}>
+          📊 Your current Impact Points : 100 - Consider more sustainable choices!
+        </div>
       </div>
     </div>
   );

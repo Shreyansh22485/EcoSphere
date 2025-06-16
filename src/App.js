@@ -11,6 +11,7 @@ import NavBarg from "./Component/navbargreen";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import EducationSection from "./Component/Educationsection";
 import SustainabilityReportsSection from "./Component/Sustainability";
+import EcoSphereImpact from "./Component/EcoSphereImpact";
 import Footer from "./Component/Footer";
 import Orders from "./Component/Orders";
 import Thanks from "./Component/thanks";
@@ -35,7 +36,7 @@ function App() {
           <Route path="/ecosphere-partner-hub" element={[<Headergreen/>, <NavBarg/>, <SellerSection/>, <Footer/>]}/> 
           <Route path="/thanks" element={[<Header />, <Thanks/>]}/> 
           <Route path="/orders" element={[<Header />, <Orders/>, <Footer/>]}/>
-          <Route path="/ecosphere-impact" element={[<Headergreen/>,<NavBarg/>, <SustainabilityReportsSection/>, <Footer/>  ]}/>
+          <Route path="/ecosphere-impact" element={[<Headergreen/>,<NavBarg/>, <EcoSphereImpact/>, <Footer/>  ]}/>
           <Route path="/ecosphere-learn" element={[<Headergreen/>,<NavBarg/>, <EducationSection/>, <Footer/>  ]}/>
           <Route path="/ecosphere" element={[<Headergreen/>,<NavBarg/>, <Homegreen/>, <Footer/>  ]}/>
           <Route path="/login" element={<Login/>}/> 

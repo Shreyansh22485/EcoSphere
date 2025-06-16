@@ -68,27 +68,49 @@ function ProductDetails() {
           <span className="discounted-price">$15.35</span>
           <span className="original-price">$18.99</span>
         </p>
-        <br></br>
-
-        <div className="eco_details">
-          <div className="carbon_details">
-            <img
-              src="../images/co2badge.png"
-              alt=""
-              className="eco_image"
-            ></img>
-            <p className="eco_text">60% Less Carbon Emission</p>
-          </div>
-          <div className="badge_details">
-            <div className="popover_trigger">
-              <img
-                id="badgeToTrack"
-                src="../images/badge5.png"
-                alt=""
-                className="eco_image"
-              ></img>
+        <br></br>        <div className="eco_details">
+          <div className="impact_points_section" style={{
+            backgroundColor: "#e8f5e8",
+            padding: "20px",
+            borderRadius: "12px",
+            marginBottom: "20px",
+            border: "2px solid #4CAF50"
+          }}>
+            <div style={{fontSize: "18px", fontWeight: "bold", color: "#2e7d32", marginBottom: "15px"}}>
+              💎 Earn 85 Impact Points with this purchase
             </div>
-            <p className="eco_text">Eco-Friendly Badge</p>
+            
+            <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginBottom: "10px"}}>
+              🌍 Your Environmental Impact:
+            </div>
+            <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
+              <div>├── 🌱 CO2 Reduced: 8.4kg vs conventional product</div>
+              <div>├── 💧 Water Saved: 234 liters in production</div>
+              <div>├── ♻️ Waste Prevented: 2.1kg from landfill</div>
+              <div>├── 🌊 Ocean Plastic: 12 bottles diverted</div>
+              <div>└── 🌳 Tree Equivalent: 0.3 trees saved</div>
+            </div>
+
+            <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginTop: "15px", marginBottom: "10px"}}>
+              👥 Group Buy Impact Multiplier:
+            </div>
+            <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
+              <div>├── Individual Impact: 8.4kg CO2 saved</div>
+              <div>├── Group Impact: 168kg CO2 saved (20 people)</div>
+              <div>├── Shipping Reduction: Additional 15kg CO2 saved</div>
+              <div>└── Total Group Benefit: 183kg CO2 prevented</div>
+            </div>            <div style={{
+              backgroundColor: "#4CAF50",
+              color: "white",
+              padding: "10px",
+              borderRadius: "8px",
+              textAlign: "center",
+              marginTop: "15px",
+              fontSize: "14px",
+              fontWeight: "bold"
+            }}>
+              🌿 EcoPioneer: 875/1000 - Excellent Sustainability Rating
+            </div>
           </div>
         </div>
         <br></br>
@@ -131,9 +153,20 @@ function ProductDetails() {
           <p>
             Available: <span style={{ color: "green" }}>In Stock</span>
           </p>
-        </div>
-        <button
+        </div>        <button
           className="addtocart"
+          style={{
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            padding: "15px 30px",
+            fontSize: "16px",
+            fontWeight: "bold",
+            borderRadius: "8px",
+            cursor: "pointer",
+            width: "100%",
+            marginBottom: "10px"
+          }}
           onClick={() =>
             addToBasket(
               "875617",
@@ -141,12 +174,23 @@ function ProductDetails() {
               "../images/straw_eco.jpg",
               8.99,
               4,
-              5
+              875
             )
-          }
-        >
-          Add to Cart
+          }        >
+          Buy with IMPACT (+85 Impact Points)
         </button>
+        
+        <div style={{
+          backgroundColor: "#f3e5f5",
+          padding: "15px",
+          borderRadius: "8px",
+          marginTop: "10px",
+          fontSize: "14px",
+          color: "#6a1b9a",
+          textAlign: "center"
+        }}>
+          🎯 Join Group Buy for 2x Impact Points & Better Pricing!
+        </div>
       </div>
     </div>
   );

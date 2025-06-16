@@ -43,12 +43,13 @@ function Productbutton({ title, image, id, price, rating, ecoscore }) {
             ))}
         </div>
       </div>
-      <img src={image} alt="" />
-      <button className="normal" onClick={addToBasket}>
-        Add to Cart
-      </button>
-      <Link to="/product1" onClick={handleLinkClick}>
-        <button className="ecosphere">Available on EcoSphere</button>
+      <img src={image} alt="" />      <Link to="/product1">
+        <button className="normal" onClick={handleLinkClick}>
+          Add to Cart
+        </button>
+      </Link>
+      <Link to="/product" onClick={handleLinkClick}>
+        <button className="ecosphere">Buy with IMPACT</button>
       </Link>{" "}
     </div>
   );

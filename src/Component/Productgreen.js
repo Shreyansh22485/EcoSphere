@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../Css/Productgreen.css";
 import { useStateValue } from "../StateProvider";
+import { Link } from "react-router-dom";
 
 function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
   const [{ basket }, dispatch] = useStateValue();
@@ -18,26 +19,35 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
         ecoscore,
       },
     });
-  };
-  // EcoScore badge logic - higher score = better sustainability
+  };  // EcoScore tier logic
+  let ecoscore_tier = "";
   let ecoscore_color = "";
   let ecoscore_text = "";
   
-  if (ecoscore >= 800) {
-    ecoscore_color = "#006400"; // Dark green for excellent
+  if (ecoscore >= 900) {
+    ecoscore_tier = "🌟 EcoChampion";
+    ecoscore_color = "#006400"; // Dark green
+    ecoscore_text = "Outstanding";
+  } else if (ecoscore >= 750) {
+    ecoscore_tier = "🌿 EcoPioneer";
+    ecoscore_color = "#228B22"; // Forest green
     ecoscore_text = "Excellent";
   } else if (ecoscore >= 600) {
-    ecoscore_color = "#32CD32"; // Lime green for good
+    ecoscore_tier = "🌱 EcoSelect";
+    ecoscore_color = "#32CD32"; // Lime green
+    ecoscore_text = "Very Good";
+  } else if (ecoscore >= 450) {
+    ecoscore_tier = "♻️ EcoAware";
+    ecoscore_color = "#FFD700"; // Gold
     ecoscore_text = "Good";
-  } else if (ecoscore >= 400) {
-    ecoscore_color = "#FFD700"; // Gold for fair
+  } else if (ecoscore >= 300) {
+    ecoscore_tier = "🌍 EcoEntry";
+    ecoscore_color = "#FF8C00"; // Orange
     ecoscore_text = "Fair";
-  } else if (ecoscore >= 200) {
-    ecoscore_color = "#FF8C00"; // Orange for poor
-    ecoscore_text = "Poor";
   } else {
-    ecoscore_color = "#FF0000"; // Red for very poor
-    ecoscore_text = "Very Poor";
+    ecoscore_tier = "⚠️ Standard";
+    ecoscore_color = "#FF0000"; // Red
+    ecoscore_text = "Needs Improvement";
   }
   const [isEcoScorePopoverVisible, setEcoScorePopoverVisible] = useState(false);
   const [showInfoPopover, setInfoShowPopover] = useState(false);
@@ -120,8 +130,7 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
             </div>
             {isEcoScorePopoverVisible && (
               <div className="popover_content">
-                <div className="content">
-                  <div 
+                <div className="content">                  <div 
                     style={{
                       padding: "15px",
                       backgroundColor: "white",
@@ -131,7 +140,7 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
                     }}
                   >
                     <h4 style={{margin: "0 0 10px 0", color: ecoscore_color}}>
-                      EcoScore: {ecoscore_text}
+                      {ecoscore_tier}: {ecoscore_text}
                     </h4>
                     <p style={{margin: "0", fontSize: "12px", color: "#666"}}>
                       This product scores {ecoscore} out of 1000 on our sustainability metrics, 
@@ -151,10 +160,23 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore }) {
               </div>
             )}
           </div>
-          <p className="eco_text">EcoScore Rating</p>
-        </div>
-      </div>
-      <button onClick={addToBasket}>Add to Cart</button>
+          <p className="eco_text">EcoTier Rating</p>
+        </div>      </div>
+      <Link to="/product" style={{ textDecoration: 'none', width: '100%' }}>
+        <button style={{
+          backgroundColor: "#4CAF50",
+          color: "white",
+          border: "none",
+          padding: "12px 24px",
+          fontSize: "14px",
+          fontWeight: "bold",
+          borderRadius: "6px",
+          cursor: "pointer",
+          width: "100%"
+        }}>
+          Buy with IMPACT
+        </button>
+      </Link>
     </div>
   );
 }
