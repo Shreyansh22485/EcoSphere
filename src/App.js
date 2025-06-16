@@ -16,6 +16,7 @@ import Footer from "./Component/Footer";
 import Orders from "./Component/Orders";
 import Thanks from "./Component/thanks";
 import SellerSection from "./Component/SellerSection";
+import EcoSpherePartnerHub from "./Component/EcoSpherePartnerHub";
 import Submitted from "./Component/Submitted";
 import Dashboard from "./Component/Dashboard";
 import Feedback from "./Component/feedback";
@@ -33,7 +34,7 @@ function App() {
           <Route path="/feedbacksubmitted" element={[<Headergreen/>, <NavBarg/>, <FSubmitted/>]}/>
           <Route path="/feedback" element={[<Headergreen/>, <NavBarg/>, <Feedback/>, <Footer/>]}/> 
           <Route path="/submitted" element={[<Headergreen/>, <Submitted/>]}/> 
-          <Route path="/ecosphere-partner-hub" element={[<Headergreen/>, <NavBarg/>, <SellerSection/>, <Footer/>]}/> 
+          <Route path="/ecosphere-partner-hub" element={[<Headergreen/>, <NavBarg/>, <EcoSpherePartnerHub/>, <Footer/>]}/> 
           <Route path="/thanks" element={[<Header />, <Thanks/>]}/> 
           <Route path="/orders" element={[<Header />, <Orders/>, <Footer/>]}/>
           <Route path="/ecosphere-impact" element={[<Headergreen/>,<NavBarg/>, <EcoSphereImpact/>, <Footer/>  ]}/>
