@@ -104,11 +104,16 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsi
         </div>
       </div>
       <img src={image} alt="" />
-      <div className="eco_details">
-        <div className="carbon_details">
+      <div className="eco_details">        <div className="carbon_details">
           <img src="../images/co2badge.png" alt="" className="eco_image"></img>
-          <p className="eco_text">{carbon_red}% Less Carbon Emission</p>
-        </div>        <div className="badge_details">
+          <p 
+            className="eco_text"
+            title={aiInsights?.carbonReduced?.description || "CO2 reduction compared to conventional alternatives"}
+            style={{cursor: "help"}}
+          >
+            {aiInsights?.carbonReduced?.value || carbon_red}kg CO2 Saved
+          </p>
+        </div><div className="badge_details">
           <div className="popover_trigger">
             <div
               id="ecoscoreToTrack"

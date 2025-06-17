@@ -171,8 +171,8 @@ PartnerSchema.virtual('sustainabilityScore').get(function() {
   
   let score = 0;
   score += (env.renewableEnergyPercent || 0) * 0.3;
-  score += (env.wasteReductionPercent || 0) * 0.2;
-  score += (env.waterConservationPercent || 0) * 0.2;  score += (social.fairLaborCertified ? 15 : 0);
+  score += (env.wasteReductionPercent || 0) * 0.2;  score += (env.waterConservationPercent || 0) * 0.2;
+  score += (social.fairLaborCertified ? 15 : 0);
   score += (social.workerSafetyPrograms ? 15 : 0);
   score += (this.certifications || []).filter(c => c.verificationStatus === 'verified').length * 5;
   
