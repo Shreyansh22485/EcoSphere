@@ -356,11 +356,18 @@ class GeminiAIService {
     try {
       const prompt = `
         As an AI sustainability expert for EcoSphere, analyze this product and provide a comprehensive EcoScore and environmental impact assessment.
-        
-        Product Information:
+          Product Information:
         - Name: ${productData.companyName} - ${productData.productName}
         - Category: ${productData.productCategory}
         - Description: ${productData.productDescription}
+        
+        IMPORTANT: Analyze the product description carefully for sustainability keywords and claims:
+        - Look for materials mentioned (bamboo, organic, recycled, etc.)
+        - Identify sustainability certifications mentioned
+        - Note any environmental benefits claimed
+        - Consider durability and lifecycle claims
+        - Evaluate any eco-friendly manufacturing processes mentioned
+        - Account for sustainability mission statements or values
         
         Environmental Data:
         - Carbon Scope 1: ${productData.carbonScope1 || 'Not provided'} kg CO2
@@ -389,8 +396,7 @@ class GeminiAIService {
         - Disposal Guidance: ${productData.disposalGuidance || 'Not provided'}
         
         Certifications: ${productData.certifications?.length || 0} certifications
-        ${productData.certifications?.map(cert => `- ${cert}`).join('\n') || 'None provided'}
-          Please provide:
+        ${productData.certifications?.map(cert => `- ${cert}`).join('\n') || 'None provided'}        Please provide:
         1. Overall EcoScore (0-1000 scale) with detailed breakdown:
            - Carbon Impact (0-300 points) - Based on carbon footprint reduction, renewable energy use
            - Materials Impact (0-250 points) - Recycled content, bio-based materials, sustainable sourcing
@@ -398,12 +404,96 @@ class GeminiAIService {
            - Lifecycle Impact (0-200 points) - Durability, repairability, end-of-life management
            - Certifications Bonus (0-50 points) - Third-party sustainability certifications
         
+        SCORING GUIDELINES - Be precise and differentiate clearly:
+        
+        Carbon Impact (0-300):
+        - 250-300: 80%+ renewable energy, carbon negative/neutral, Scope 1+2+3 all tracked
+        - 200-249: 60-79% renewable energy, significant emission reductions
+        - 150-199: 40-59% renewable energy, moderate improvements
+        - 100-149: 20-39% renewable energy, basic improvements
+        - 50-99: <20% renewable energy, minimal improvements
+        - 0-49: No renewable energy data, conventional carbon footprint
+        
+        Materials Impact (0-250):
+        - 200-250: 80%+ recycled/bio-based content, zero toxic substances
+        - 150-199: 60-79% sustainable content, minimal toxics
+        - 100-149: 40-59% sustainable content, low toxics
+        - 50-99: 20-39% sustainable content, moderate toxics
+        - 0-49: <20% sustainable content, high/unknown toxics
+        
+        Packaging Impact (0-200):
+        - 180-200: 100% plastic-free, minimal weight, fully recyclable/compostable
+        - 140-179: Mostly plastic-free, low weight, mostly recyclable
+        - 100-139: Some plastic reduction, moderate weight
+        - 60-99: Limited improvements, some recyclability
+        - 0-59: Conventional packaging, high waste
+        
+        Lifecycle Impact (0-200):
+        - 180-200: 10+ year lifespan, excellent repairability, take-back program
+        - 140-179: 5-10 year lifespan, good repairability, some end-of-life support
+        - 100-139: 3-5 year lifespan, fair repairability
+        - 60-99: 1-3 year lifespan, limited repairability
+        - 0-59: <1 year lifespan, not repairable, no disposal guidance
+        
+        Certifications (0-50):
+        - 40-50: 3+ verified major certifications (Energy Star, FSC, Cradle2Cradle, etc.)
+        - 30-39: 2 verified certifications
+        - 20-29: 1 verified certification
+        - 10-19: Pending/unverified certifications
+        - 0-9: No certifications
+        
         2. Environmental Impact Insights (provide realistic estimates even with limited data):
            - CO2 Reduced: kg CO2 saved vs conventional alternative (estimate based on category averages if specific data unavailable)
            - Water Saved: liters saved in production/use (use industry benchmarks for estimates)
            - Waste Prevented: kg waste prevented from landfill (calculate from recyclable content and packaging)
            - Ocean Plastic Diverted: equivalent bottles diverted (if applicable to product category)
-           - Tree Equivalent: trees saved equivalent (based on renewable/recycled materials)
+           - Tree Equivalent: trees saved equivalent (based on renewable/recycled materials)          FEW-SHOT EXAMPLES FOR REFERENCE:
+        
+        Example 1 - Premium Eco Product (High Score):
+        Bamboo Laptop Stand: Description mentions "100% sustainable bamboo, carbon-neutral production, plastic-free packaging, lifetime warranty"
+        Data: 90% renewable energy, 95% bamboo content, plastic-free packaging, 15-year lifespan, FSC certified
+        Score: 850 (Carbon: 270, Materials: 240, Packaging: 190, Lifecycle: 180, Certifications: 40)
+        
+        Example 2 - Good Eco Product (Medium-High Score):
+        Recycled Steel Water Bottle: Description: "Made from 80% recycled steel, BPA-free, designed to last 10+ years, eliminates single-use bottles"
+        Data: 60% renewable energy, 80% recycled steel, recyclable packaging, 10-year lifespan, 1 certification
+        Score: 620 (Carbon: 180, Materials: 200, Packaging: 120, Lifecycle: 160, Certifications: 20)
+        
+        Example 3 - Basic Eco Product (Medium Score):
+        Organic Cotton T-shirt: Description: "GOTS certified organic cotton, ethically made, natural dyes, biodegradable"
+        Data: 30% renewable energy, 70% organic cotton, minimal packaging improvements, 3-year lifespan, GOTS certified
+        Score: 450 (Carbon: 90, Materials: 175, Packaging: 80, Lifecycle: 100, Certifications: 25)
+        
+        Example 4 - Entry-Level Eco Product (Low-Medium Score):
+        Recycled Paper Notebook: Description: "Made from 50% recycled paper, supporting forest conservation"
+        Data: 20% renewable energy, 50% recycled paper, conventional packaging, 1-year use, no certifications
+        Score: 280 (Carbon: 60, Materials: 125, Packaging: 40, Lifecycle: 50, Certifications: 0)
+        
+        Example 5 - Greenwashing Product (Low Score):
+        "Eco-Friendly" Plastic Container: Description: "Eco-friendly design, green packaging" (vague claims, no specifics)
+        Data: No renewable energy data, virgin plastic, non-recyclable packaging, 6-month lifespan, no certifications
+        Score: 120 (Carbon: 20, Materials: 25, Packaging: 15, Lifecycle: 30, Certifications: 0)
+        
+        ANALYZE THE PROVIDED PRODUCT DATA and score accordingly. Don't default to ~700 - use the full range!
+          CRITICAL SCORING INSTRUCTIONS:
+        - PRIORITIZE DESCRIPTION ANALYSIS: Use the product description to infer missing data points
+        - If description mentions "bamboo/organic/recycled" materials, score materials component higher
+        - If description claims "carbon neutral/eco-friendly/sustainable", adjust carbon scoring
+        - If description mentions durability/longevity, increase lifecycle scoring
+        - If description includes certification names, factor into certifications component
+        - If data is missing or unclear, score conservatively (lean towards lower scores)
+        - Only give high scores (800+) for truly exceptional sustainability features
+        - Medium scores (400-600) for products with some good sustainability features
+        - Low scores (100-300) for conventional products with minimal eco features
+        - Consider the product category - a reusable product should score higher than single-use
+        
+        DESCRIPTION-BASED SCORING ADJUSTMENTS:
+        - Keywords like "sustainable", "eco-friendly", "green": +50-100 points if backed by data
+        - Material keywords like "bamboo", "organic", "recycled": +50-150 points in materials
+        - Durability claims like "lifetime", "durable", "long-lasting": +50-100 points in lifecycle
+        - Certifications mentioned in description: +20-40 points in certifications
+        - Packaging claims like "plastic-free", "minimal packaging": +50-100 points in packaging
+        - Be skeptical of vague claims without supporting data - don't overscore greenwashing
         
         CRITICAL INSTRUCTION: Always provide realistic environmental impact estimates, even with limited data:
         
@@ -504,52 +594,136 @@ class GeminiAIService {
         error: error.message
       };
     }
-  }
-  /**
+  }  /**
    * Fallback EcoScore calculation if AI fails
    */
   calculateFallbackEcoScore(productData) {
     let score = 0;
     
-    // Carbon Impact (0-300)
-    const renewablePercent = parseInt(productData.renewableEnergyPercent) || 0;
-    score += Math.min(300, (renewablePercent / 100) * 300);
+    // Analyze product description for sustainability keywords
+    const description = (productData.productDescription || '').toLowerCase();
+    const sustainabilityKeywords = {
+      materials: ['bamboo', 'organic', 'recycled', 'biodegradable', 'sustainable', 'natural', 'eco-friendly', 'renewable'],
+      carbon: ['carbon neutral', 'carbon negative', 'low carbon', 'renewable energy', 'solar powered', 'clean energy'],
+      packaging: ['plastic-free', 'minimal packaging', 'recyclable', 'compostable', 'zero waste'],
+      lifecycle: ['durable', 'long-lasting', 'lifetime', 'repairable', 'warranty', 'take-back'],
+      certifications: ['certified', 'fsc', 'gots', 'energy star', 'cradle to cradle', 'fair trade']
+    };
     
-    // Materials (0-250)
+    // Carbon Impact (0-300) - More granular scoring
+    const renewablePercent = parseInt(productData.renewableEnergyPercent) || 0;
+    let carbonScore = 0;
+    if (renewablePercent >= 80) carbonScore = 270;
+    else if (renewablePercent >= 60) carbonScore = 200;
+    else if (renewablePercent >= 40) carbonScore = 150;
+    else if (renewablePercent >= 20) carbonScore = 100;
+    else if (renewablePercent > 0) carbonScore = 50;
+    else carbonScore = 20;
+    
+    // Boost carbon score based on description
+    if (sustainabilityKeywords.carbon.some(keyword => description.includes(keyword))) {
+      carbonScore += 50;
+    }
+    score += Math.min(300, carbonScore);
+    
+    // Materials (0-250) - More differentiated
     const recycledPercent = parseInt(productData.recycledContentPercent) || 0;
     const bioBasedPercent = parseInt(productData.bioBasedContentPercent) || 0;
-    score += Math.min(200, (recycledPercent / 100) * 200);
-    score += Math.min(50, (bioBasedPercent / 100) * 50);
+    const totalSustainableContent = recycledPercent + bioBasedPercent;
     
-    // Packaging (0-200)
-    if (productData.plasticFreePackaging) score += 150;
-    if (productData.packagingRecyclable === 'yes') score += 50;
+    let materialsScore = 0;
+    if (totalSustainableContent >= 80) materialsScore = 200;
+    else if (totalSustainableContent >= 60) materialsScore = 150;
+    else if (totalSustainableContent >= 40) materialsScore = 100;
+    else if (totalSustainableContent >= 20) materialsScore = 50;
+    else materialsScore = 20;
     
-    // Lifecycle (0-200)
-    if (productData.takeBackProgram) score += 100;
+    // Adjust for toxic substances
+    if (productData.toxicSubstances === 'none') materialsScore += 50;
+    else if (productData.toxicSubstances === 'minimal') materialsScore += 25;
+    
+    // Boost materials score based on description
+    const materialKeywordCount = sustainabilityKeywords.materials.filter(keyword => description.includes(keyword)).length;
+    materialsScore += materialKeywordCount * 15;
+    
+    score += Math.min(250, materialsScore);
+    
+    // Packaging (0-200) - More precise
+    let packagingScore = 0;
+    if (productData.plasticFreePackaging) packagingScore += 100;
+    if (productData.packagingRecyclable === 'yes') packagingScore += 50;
+    else if (productData.packagingRecyclable === 'partial') packagingScore += 25;
+    
+    // Penalize heavy packaging
+    const weight = parseFloat(productData.packagingWeight) || 0;
+    if (weight > 0 && weight < 50) packagingScore += 50;
+    else if (weight >= 50 && weight < 200) packagingScore += 25;
+    
+    // Boost packaging score based on description
+    if (sustainabilityKeywords.packaging.some(keyword => description.includes(keyword))) {
+      packagingScore += 40;
+    }
+    
+    score += Math.min(200, packagingScore);
+    
+    // Lifecycle (0-200) - More nuanced
+    let lifecycleScore = 0;
     const lifespan = parseInt(productData.expectedLifespan) || 0;
-    if (lifespan > 5) score += 100;
+    if (lifespan >= 10) lifecycleScore += 100;
+    else if (lifespan >= 5) lifecycleScore += 75;
+    else if (lifespan >= 3) lifecycleScore += 50;
+    else if (lifespan >= 1) lifecycleScore += 25;
     
-    // Certifications (0-50)
+    if (productData.takeBackProgram) lifecycleScore += 50;
+    if (productData.repairability === 'excellent') lifecycleScore += 50;
+    else if (productData.repairability === 'good') lifecycleScore += 25;
+    
+    // Boost lifecycle score based on description
+    if (sustainabilityKeywords.lifecycle.some(keyword => description.includes(keyword))) {
+      lifecycleScore += 30;
+    }
+    
+    score += Math.min(200, lifecycleScore);
+    
+    // Certifications (0-50) - More conservative
     const certCount = productData.certifications?.length || 0;
-    score += Math.min(50, certCount * 10);
+    let certScore = 0;
+    if (certCount >= 3) certScore = 40;
+    else if (certCount >= 2) certScore = 30;
+    else if (certCount >= 1) certScore = 20;
+    
+    // Boost certification score based on description
+    if (sustainabilityKeywords.certifications.some(keyword => description.includes(keyword))) {
+      certScore += 10;
+    }
+    
+    score += Math.min(50, certScore);
+    
+    // Ensure we don't exceed 1000 or fall below reasonable minimums
+    score = Math.min(1000, Math.max(50, score));
+    
+    const finalCarbonScore = Math.min(300, carbonScore);
+    const finalMaterialsScore = Math.min(250, materialsScore);
+    const finalPackagingScore = Math.min(200, packagingScore);
+    const finalLifecycleScore = Math.min(200, lifecycleScore);
+    const finalCertScore = Math.min(50, certScore);
     
     return {
       overallScore: Math.round(score),
       components: {
-        carbon: Math.min(300, (renewablePercent / 100) * 300),
-        materials: Math.min(250, (recycledPercent / 100) * 200 + (bioBasedPercent / 100) * 50),
-        packaging: (productData.plasticFreePackaging ? 150 : 0) + (productData.packagingRecyclable === 'yes' ? 50 : 0),
-        lifecycle: (productData.takeBackProgram ? 100 : 0) + (lifespan > 5 ? 100 : 0),
-        certifications: Math.min(50, certCount * 10)
+        carbon: finalCarbonScore,
+        materials: finalMaterialsScore,
+        packaging: finalPackagingScore,
+        lifecycle: finalLifecycleScore,
+        certifications: finalCertScore
       },
       insights: {
-        carbonReduced: { value: Math.round(score * 0.015), description: "Estimated CO2 reduction vs conventional product based on sustainability features" },
+        carbonReduced: { value: Math.round(score * 0.015), description: "Estimated CO2 reduction vs conventional product based on sustainability features and description analysis" },
         waterSaved: { value: Math.round(score * 0.4), description: "Estimated water savings through sustainable production methods" },
         wastePrevented: { value: Math.round(score * 0.005), description: "Estimated waste prevented through recyclable materials and packaging" },
         oceanPlasticDiverted: { value: Math.round(score * 0.03), description: "Equivalent bottles diverted through sustainable packaging choices" },
         treeEquivalent: { value: Math.round(score * 0.001 * 10) / 10, description: "Tree equivalent saved through renewable and recycled materials" },
-        summary: "Estimated environmental benefits based on sustainable product features",
+        summary: `Environmental benefits estimated from product features and description analysis (Score: ${Math.round(score)}/1000)`,
         confidence: 0.7
       }
     };
