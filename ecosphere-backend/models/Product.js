@@ -76,18 +76,11 @@ const ProductSchema = new mongoose.Schema({
       packaging: { 
         type: Number, 
         min: 0, 
-        max: 150,
-        default: 0
-      },
-      social: { 
-        type: Number, 
-        min: 0, 
-        max: 150,
-        default: 0
+        max: 150,        default: 0
       },
       lifecycle: { 
         type: Number, 
-        min: 0, 
+        min: 0,
         max: 150,
         default: 0
       },
@@ -212,24 +205,20 @@ const ProductSchema = new mongoose.Schema({
         maxlength: [500, 'Disposal guidance cannot exceed 500 characters']
       }
     },
-    
-    social: {
-      fairLabor: { 
-        type: Boolean, 
-        default: false 
-      },
-      workerSafety: { 
-        type: Boolean, 
-        default: false 
-      },
-      communityImpact: {
-        type: String,
-        maxlength: [500, 'Community impact description cannot exceed 500 characters']
-      },
+      operations: {
       supplyChainTransparency: { 
         type: String, 
         enum: ['full', 'partial', 'limited', 'none'],
         default: 'none'
+      },
+      localSourcing: {
+        type: Boolean,
+        default: false
+      },
+      transportationEfficiency: {
+        type: String,
+        enum: ['excellent', 'good', 'standard', 'poor'],
+        default: 'standard'
       }
     }
   },

@@ -70,17 +70,18 @@ const PartnerSchema = new mongoose.Schema({
       carbonScope3: { type: Number, min: 0 },
       renewableEnergyPercent: { type: Number, min: 0, max: 100, default: 0 },
       wasteReductionPercent: { type: Number, min: 0, max: 100, default: 0 },
-      waterConservationPercent: { type: Number, min: 0, max: 100, default: 0 }
-    },
-    social: {
-      fairLaborCertified: { type: Boolean, default: false },
-      workerSafetyPrograms: { type: Boolean, default: false },
-      communityInvestmentPercent: { type: Number, min: 0, max: 100, default: 0 },
-      diversityInclusionPrograms: { type: Boolean, default: false },
+      waterConservationPercent: { type: Number, min: 0, max: 100, default: 0 }    },
+    operations: {
       supplyChainTransparency: { 
         type: String, 
         enum: ['full', 'partial', 'limited', 'none'], 
         default: 'none' 
+      },
+      localSourcing: { type: Boolean, default: false },
+      transportationEfficiency: { 
+        type: String, 
+        enum: ['excellent', 'good', 'standard', 'poor'], 
+        default: 'standard' 
       }
     }
   },
@@ -167,14 +168,27 @@ PartnerSchema.virtual('impactTier').get(function() {
 // Virtual for sustainability score
 PartnerSchema.virtual('sustainabilityScore').get(function() {
   const env = this.sustainabilityProfile?.environmental || {};
-  const social = this.sustainabilityProfile?.social || {};
+  const ops = this.sustainabilityProfile?.operations || {};
   
   let score = 0;
-  score += (env.renewableEnergyPercent || 0) * 0.3;
-  score += (env.wasteReductionPercent || 0) * 0.2;  score += (env.waterConservationPercent || 0) * 0.2;
-  score += (social.fairLaborCertified ? 15 : 0);
-  score += (social.workerSafetyPrograms ? 15 : 0);
-  score += (this.certifications || []).filter(c => c.verificationStatus === 'verified').length * 5;
+  
+  // Environmental factors (70% weight)
+  score += (env.renewableEnergyPercent || 0) * 0.4;  // 40% weight
+  score += (env.wasteReductionPercent || 0) * 0.2;   // 20% weight
+  score += (env.waterConservationPercent || 0) * 0.1; // 10% weight
+  
+  // Operations factors (20% weight)
+  const transparencyScore = {
+    'full': 15,
+    'partial': 10,
+    'limited': 5,
+    'none': 0
+  };
+  score += transparencyScore[ops.supplyChainTransparency] || 0;
+  score += (ops.localSourcing ? 5 : 0);
+  
+  // Certifications (10% weight)
+  score += (this.certifications || []).filter(c => c.verificationStatus === 'verified').length * 2;
   
   return Math.min(100, Math.round(score));
 });

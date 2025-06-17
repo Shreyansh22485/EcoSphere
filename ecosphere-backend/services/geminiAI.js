@@ -179,11 +179,10 @@ class GeminiAIService {
         - Carbon Scope 1: ${partnerData.sustainabilityProfile?.environmental?.carbonScope1 || 'Not provided'}
         - Carbon Scope 2: ${partnerData.sustainabilityProfile?.environmental?.carbonScope2 || 'Not provided'}
         - Carbon Scope 3: ${partnerData.sustainabilityProfile?.environmental?.carbonScope3 || 'Not provided'}
-        
-        Social Responsibility:
-        - Fair Labor Certified: ${partnerData.sustainabilityProfile?.social?.fairLaborCertified || false}
-        - Worker Safety Programs: ${partnerData.sustainabilityProfile?.social?.workerSafetyPrograms || false}
+          Supply Chain & Operations:
         - Supply Chain Transparency: ${partnerData.sustainabilityProfile?.social?.supplyChainTransparency || 'None'}
+        - Local Sourcing: ${partnerData.sustainabilityProfile?.operations?.localSourcing || 'Unknown'}
+        - Transportation Efficiency: ${partnerData.sustainabilityProfile?.operations?.transportationEfficiency || 'Unknown'}
         
         Certifications: ${partnerData.certifications?.length || 0} certifications
         ${partnerData.certifications?.map(cert => `- ${cert.name}`).join('\n') || 'None listed'}
@@ -378,12 +377,10 @@ class GeminiAIService {
         - Packaging Weight: ${productData.packagingWeight || 'Not provided'}g
         - Packaging Recyclable: ${productData.packagingRecyclable || 'unknown'}
         - Plastic-free Packaging: ${productData.plasticFreePackaging || false}
-        
-        Social Responsibility:
-        - Fair Labor Certified: ${productData.fairLaborCertified || false}
-        - Worker Safety Programs: ${productData.workerSafetyPrograms || false}
-        - Community Impact: ${productData.communityImpact || 'Not provided'}
+          Supply Chain:
         - Supply Chain Transparency: ${productData.supplyChainTransparency || 'unknown'}
+        - Local Sourcing: ${productData.localSourcing || 'unknown'}
+        - Transportation Method: ${productData.transportationMethod || 'unknown'}
         
         Product Lifecycle:
         - Expected Lifespan: ${productData.expectedLifespan || 'Not provided'} years
@@ -393,61 +390,84 @@ class GeminiAIService {
         
         Certifications: ${productData.certifications?.length || 0} certifications
         ${productData.certifications?.map(cert => `- ${cert}`).join('\n') || 'None provided'}
-        
-        Please provide:
+          Please provide:
         1. Overall EcoScore (0-1000 scale) with detailed breakdown:
-           - Carbon Impact (0-250 points)
-           - Materials Impact (0-200 points) 
-           - Packaging Impact (0-150 points)
-           - Social Impact (0-150 points)
-           - Lifecycle Impact (0-150 points)
-           - Certifications Bonus (0-100 points)
+           - Carbon Impact (0-300 points) - Based on carbon footprint reduction, renewable energy use
+           - Materials Impact (0-250 points) - Recycled content, bio-based materials, sustainable sourcing
+           - Packaging Impact (0-200 points) - Plastic-free, recyclable, minimal packaging
+           - Lifecycle Impact (0-200 points) - Durability, repairability, end-of-life management
+           - Certifications Bonus (0-50 points) - Third-party sustainability certifications
         
-        2. Environmental Impact Insights (specific quantified values):
-           - CO2 Reduced: kg CO2 saved vs conventional alternative
-           - Water Saved: liters saved in production/use
-           - Waste Prevented: kg waste prevented from landfill
-           - Ocean Plastic Diverted: equivalent bottles diverted
-           - Tree Equivalent: trees saved equivalent
-          3. Confidence score (0-1) based on data completeness
-        4. One-liner describing the positive ecosystem impact when a user buys this product
+        2. Environmental Impact Insights (provide realistic estimates even with limited data):
+           - CO2 Reduced: kg CO2 saved vs conventional alternative (estimate based on category averages if specific data unavailable)
+           - Water Saved: liters saved in production/use (use industry benchmarks for estimates)
+           - Waste Prevented: kg waste prevented from landfill (calculate from recyclable content and packaging)
+           - Ocean Plastic Diverted: equivalent bottles diverted (if applicable to product category)
+           - Tree Equivalent: trees saved equivalent (based on renewable/recycled materials)
         
-        Format response as JSON:
+        CRITICAL INSTRUCTION: Always provide realistic environmental impact estimates, even with limited data:
+        
+        FOR CARBON REDUCTION:
+        - Estimate based on renewable energy use, efficient manufacturing, sustainable materials
+        - Typical eco-friendly products save 2-15kg CO2 vs conventional alternatives
+        - Use category-specific benchmarks (e.g., reusable products save more than single-use)
+        
+        FOR WATER SAVINGS:
+        - Consider production efficiency, sustainable materials, product lifecycle
+        - Eco-friendly products typically save 50-500 liters vs conventional alternatives
+        - Factor in water-efficient manufacturing processes
+        
+        FOR WASTE PREVENTION:
+        - Calculate from packaging reduction, durability improvements, recyclability
+        - Sustainable products prevent 0.5-5kg waste typically
+        - Consider end-of-life impact and circular economy benefits
+        
+        Never respond with "insufficient data" - always provide educated estimates based on industry standards and the sustainability features mentioned.
+        
+        3. Confidence score (0-1) based on data completeness
+        4. One-liner describing the positive ecosystem impact when a user buys this product        Format response as JSON:
         {
           "overallScore": 750,
           "components": {
-            "carbon": 180,
-            "materials": 140,
-            "packaging": 120,
-            "social": 100,
-            "lifecycle": 110,
+            "carbon": 220,
+            "materials": 180,
+            "packaging": 160,
+            "lifecycle": 140,
             "certifications": 50
           },
           "insights": {
             "carbonReduced": {
               "value": 8.4,
-              "description": "8.4kg CO2 saved vs conventional plastic alternative"
+              "description": "8.4kg CO2 saved vs conventional alternative through 60% renewable energy and efficient production methods"
             },
             "waterSaved": {
               "value": 234,
-              "description": "234 liters saved in sustainable production process"
+              "description": "234 liters saved through water-efficient manufacturing and sustainable material processing"
             },
             "wastePrevented": {
               "value": 2.1,
-              "description": "2.1kg waste prevented from landfill through biodegradable materials"
+              "description": "2.1kg waste prevented through biodegradable materials, minimal packaging, and circular design"
             },
             "oceanPlasticDiverted": {
               "value": 12,
-              "description": "Equivalent to 12 plastic bottles diverted from ocean"
+              "description": "Equivalent to 12 plastic bottles diverted through plastic-free packaging and sustainable alternatives"
             },
             "treeEquivalent": {
               "value": 0.3,
-              "description": "0.3 tree equivalent saved through sustainable sourcing"
+              "description": "0.3 tree equivalent saved through recycled materials and sustainable sourcing practices"
             },
-            "summary": "Every purchase saves 8.4kg CO2, 234L water, and prevents 2.1kg waste - helping restore our planet one product at a time",
+            "summary": "Every purchase saves 8.4kg CO2, 234L water, and prevents 2.1kg waste - contributing to a healthier planet through sustainable choices",
             "confidence": 0.85
           }
         }
+        
+        EXAMPLE CALCULATIONS FOR GUIDANCE:
+        - A reusable water bottle (vs single-use): ~15kg CO2, 300L water, 3kg waste saved annually
+        - Bamboo utensils (vs plastic): ~5kg CO2, 100L water, 1kg waste saved
+        - Organic cotton bag (vs plastic bags): ~10kg CO2, 200L water, 2kg waste saved annually
+        - LED bulb (vs incandescent): ~25kg CO2, 50L water, 0.5kg waste saved over lifetime
+        
+        Scale your estimates appropriately based on the product category and sustainability features provided.
       `;
 
       const result = await this.model.generateContent(prompt);
@@ -485,58 +505,52 @@ class GeminiAIService {
       };
     }
   }
-
   /**
    * Fallback EcoScore calculation if AI fails
    */
   calculateFallbackEcoScore(productData) {
     let score = 0;
     
-    // Carbon Impact (0-250)
+    // Carbon Impact (0-300)
     const renewablePercent = parseInt(productData.renewableEnergyPercent) || 0;
-    score += Math.min(250, (renewablePercent / 100) * 250);
+    score += Math.min(300, (renewablePercent / 100) * 300);
     
-    // Materials (0-200)
+    // Materials (0-250)
     const recycledPercent = parseInt(productData.recycledContentPercent) || 0;
     const bioBasedPercent = parseInt(productData.bioBasedContentPercent) || 0;
-    score += Math.min(150, (recycledPercent / 100) * 150);
+    score += Math.min(200, (recycledPercent / 100) * 200);
     score += Math.min(50, (bioBasedPercent / 100) * 50);
     
-    // Packaging (0-150)
-    if (productData.plasticFreePackaging) score += 100;
+    // Packaging (0-200)
+    if (productData.plasticFreePackaging) score += 150;
     if (productData.packagingRecyclable === 'yes') score += 50;
     
-    // Social (0-150)
-    if (productData.fairLaborCertified) score += 75;
-    if (productData.workerSafetyPrograms) score += 75;
-    
-    // Lifecycle (0-150)
-    if (productData.takeBackProgram) score += 75;
+    // Lifecycle (0-200)
+    if (productData.takeBackProgram) score += 100;
     const lifespan = parseInt(productData.expectedLifespan) || 0;
-    if (lifespan > 5) score += 75;
+    if (lifespan > 5) score += 100;
     
-    // Certifications (0-100)
+    // Certifications (0-50)
     const certCount = productData.certifications?.length || 0;
-    score += Math.min(100, certCount * 20);
+    score += Math.min(50, certCount * 10);
     
     return {
       overallScore: Math.round(score),
       components: {
-        carbon: Math.min(250, (renewablePercent / 100) * 250),
-        materials: Math.min(200, (recycledPercent / 100) * 150 + (bioBasedPercent / 100) * 50),
-        packaging: (productData.plasticFreePackaging ? 100 : 0) + (productData.packagingRecyclable === 'yes' ? 50 : 0),
-        social: (productData.fairLaborCertified ? 75 : 0) + (productData.workerSafetyPrograms ? 75 : 0),
-        lifecycle: (productData.takeBackProgram ? 75 : 0) + (lifespan > 5 ? 75 : 0),
-        certifications: Math.min(100, certCount * 20)
+        carbon: Math.min(300, (renewablePercent / 100) * 300),
+        materials: Math.min(250, (recycledPercent / 100) * 200 + (bioBasedPercent / 100) * 50),
+        packaging: (productData.plasticFreePackaging ? 150 : 0) + (productData.packagingRecyclable === 'yes' ? 50 : 0),
+        lifecycle: (productData.takeBackProgram ? 100 : 0) + (lifespan > 5 ? 100 : 0),
+        certifications: Math.min(50, certCount * 10)
       },
       insights: {
-        carbonReduced: { value: Math.round(score * 0.01), description: "Estimated CO2 reduction vs conventional product" },
-        waterSaved: { value: Math.round(score * 0.3), description: "Estimated water savings in production" },
-        wastePrevented: { value: Math.round(score * 0.003), description: "Estimated waste prevented from landfill" },
-        oceanPlasticDiverted: { value: Math.round(score * 0.02), description: "Equivalent bottles diverted from ocean" },
-        treeEquivalent: { value: Math.round(score * 0.0005 * 10) / 10, description: "Tree equivalent saved" },
-        summary: "Fallback calculation based on basic sustainability metrics",
-        confidence: 0.6
+        carbonReduced: { value: Math.round(score * 0.015), description: "Estimated CO2 reduction vs conventional product based on sustainability features" },
+        waterSaved: { value: Math.round(score * 0.4), description: "Estimated water savings through sustainable production methods" },
+        wastePrevented: { value: Math.round(score * 0.005), description: "Estimated waste prevented through recyclable materials and packaging" },
+        oceanPlasticDiverted: { value: Math.round(score * 0.03), description: "Equivalent bottles diverted through sustainable packaging choices" },
+        treeEquivalent: { value: Math.round(score * 0.001 * 10) / 10, description: "Tree equivalent saved through renewable and recycled materials" },
+        summary: "Estimated environmental benefits based on sustainable product features",
+        confidence: 0.7
       }
     };
   }

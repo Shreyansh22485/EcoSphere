@@ -137,11 +137,10 @@ const createProduct = asyncHandler(async (req, res) => {
             carbonScope3: parseFloat(productFormData.carbonScope3) || 0,
             renewableEnergyPercent: parseInt(productFormData.renewableEnergyPercent) || 0,
             wasteReductionPercent: parseInt(productFormData.wasteReductionPercent) || 0
-          },
-          social: {
-            fairLaborCertified: productFormData.fairLaborCertified || false,
-            workerSafetyPrograms: productFormData.workerSafetyPrograms || false,
-            supplyChainTransparency: productFormData.supplyChainTransparency || 'limited'
+          },          operations: {
+            supplyChainTransparency: productFormData.supplyChainTransparency || 'limited',
+            localSourcing: productFormData.localSourcing || false,
+            transportationEfficiency: productFormData.transportationEfficiency || 'standard'
           }
         },
         certifications: (productFormData.certifications || []).map(cert => ({
@@ -192,12 +191,10 @@ const createProduct = asyncHandler(async (req, res) => {
           repairability: productFormData.repairability || 'fair',
           takeBackProgram: productFormData.takeBackProgram || false,
           disposalGuidance: productFormData.disposalGuidance || ''
-        },
-        social: {
-          fairLabor: productFormData.fairLaborCertified || false,
-          workerSafety: productFormData.workerSafetyPrograms || false,
-          communityImpact: productFormData.communityImpact || '',
-          supplyChainTransparency: productFormData.supplyChainTransparency || 'limited'
+        },        operations: {
+          supplyChainTransparency: productFormData.supplyChainTransparency || 'limited',
+          localSourcing: productFormData.localSourcing || false,
+          transportationEfficiency: productFormData.transportationEfficiency || 'standard'
         }
       },
         // Certifications
