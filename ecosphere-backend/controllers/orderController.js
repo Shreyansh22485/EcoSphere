@@ -47,7 +47,7 @@ const createOrder = async (req, res) => {
       const price = item.price || product.price;
       const itemTotal = price * quantity;      // Calculate impact for this item using ecoScore and AI insights
       const ecoScore = product.ecoScore?.overall || 0;
-      const itemImpactPoints = Math.floor(ecoScore / 10) + (product.certifications?.length || 0) * 5;
+      const itemImpactPoints = Math.floor(ecoScore / 10);
       
       // Use AI insights for real impact data
       const aiInsights = product.ecoScore?.aiInsights || {};
@@ -201,8 +201,13 @@ const createOrder = async (req, res) => {
       achievementUpdates['achievements.firstPurchase'] = today;
     }    if (isFirstEcoProduct && processedItems.some(item => item.ecoScore >= 300)) {
       achievementUpdates['achievements.firstEcoProduct'] = today;
-    }// Award impact points to the user and update eco tier purchase counts
-    await User.findByIdAndUpdate(userId, {
+    }
+
+    // Generate current month key for tracking (YYYY-MM format)
+    const currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    
+    // Award impact points to the user and update eco tier purchase counts
+    const userUpdate = await User.findByIdAndUpdate(userId, {
       $inc: { 
         'impactPoints': totalImpactPoints,
         'totalCarbonSaved': totalCarbonSaved,
@@ -213,13 +218,14 @@ const createOrder = async (req, res) => {
         'ecoTierPurchases.ecoSelectCount': ecoTierCounts.ecoSelectCount,
         'ecoTierPurchases.ecoPioneerCount': ecoTierCounts.ecoPioneerCount,
         'ecoTierPurchases.ecoChampionCount': ecoTierCounts.ecoChampionCount,
-        'ecoTierPurchases.standardCount': ecoTierCounts.standardCount
+        'ecoTierPurchases.standardCount': ecoTierCounts.standardCount,
+        [`monthlyImpactPoints.${currentMonthKey}`]: totalImpactPoints
       },
       $push: {
         'orders': order._id
       },
       $set: achievementUpdates
-    });
+    }, { new: true });
 
     // Clear the user's cart
     await Cart.findOneAndUpdate(

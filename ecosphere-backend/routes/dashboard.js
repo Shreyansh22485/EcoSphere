@@ -16,32 +16,19 @@ router.get('/stats', protect, async (req, res) => {
         success: false,
         message: 'User not found'
       });
-    }
-
-    // Get user's orders for monthly trend
-    const orders = await Order.find({ customer: userId })
-      .sort({ orderDate: -1 })
-      .limit(12);
-
-    // Calculate monthly impact points trend
+    }    // Calculate monthly impact points trend from user's monthly tracking
     const monthlyData = {};
     const now = new Date();
     
-    // Initialize last 6 months
+    // Initialize last 6 months with 0 values
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
-      monthlyData[monthKey] = 0;
-    }    // Aggregate points by month (only if orders exist)
-    if (orders && orders.length > 0) {
-      orders.forEach(order => {
-        if (order.orderDate && order.orderDate instanceof Date) {
-          const monthKey = order.orderDate.toLocaleDateString('en-US', { month: 'short' });
-          if (monthlyData.hasOwnProperty(monthKey)) {
-            monthlyData[monthKey] += order.totalImpact?.impactPoints || 0;
-          }
-        }
-      });
+      const trackingKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      
+      // Get points from user's monthly tracking
+      const monthlyPoints = user.monthlyImpactPoints?.get(trackingKey) || 0;
+      monthlyData[monthKey] = monthlyPoints;
     }
 
     // Convert to array format for chart

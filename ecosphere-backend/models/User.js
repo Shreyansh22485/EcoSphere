@@ -110,12 +110,18 @@ const UserSchema = new mongoose.Schema({
     ecoChampionCount: { type: Number, default: 0 },
     standardCount: { type: Number, default: 0 }
   },
-  
-  // Streak tracking
+    // Streak tracking
   sustainabilityStreak: {
     current: { type: Number, default: 0 },
     longest: { type: Number, default: 0 },
     lastPurchaseDate: { type: Date }
+  },
+  
+  // Monthly impact points tracking for dashboard trends
+  monthlyImpactPoints: {
+    type: Map,
+    of: Number,
+    default: new Map()
   },
   
   // User preferences
