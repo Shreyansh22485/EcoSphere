@@ -22,8 +22,7 @@ function EcoSpherePartnerHub() {
     renewableEnergyPercent: "",
     waterUsagePerUnit: "",
     wasteReductionPercent: "",
-    
-    // Materials & Packaging
+      // Materials & Packaging
     recycledContentPercent: "",
     bioBasedContentPercent: "",
     toxicSubstances: "none",
@@ -41,8 +40,7 @@ function EcoSpherePartnerHub() {
     repairability: "",
     takeBackProgram: false,
     disposalGuidance: "",
-    
-    // Certifications
+      // Certifications
     certifications: [],
     certificationFiles: [],
     
@@ -51,12 +49,14 @@ function EcoSpherePartnerHub() {
     groupBuyingMinQuantity: "",
     groupBuyingDiscountTiers: []
   });
-
   // Add state for image uploads
   const [productImages, setProductImages] = useState([]);
   const [imagePreview, setImagePreview] = useState([]);
 
   const totalSteps = mode === 'simplified' ? 4 : 6;
+
+  // Remove the real-time EcoScore calculation
+  // EcoScore will now be calculated by AI on the backend
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -65,7 +65,6 @@ function EcoSpherePartnerHub() {
       [name]: type === 'checkbox' ? checked : value
     }));
   };
-
   const handleCertificationChange = (cert, isChecked) => {
     setFormData(prev => ({
       ...prev,
@@ -82,7 +81,10 @@ function EcoSpherePartnerHub() {
       return;
     }
     
+    // Update the productImages state
     setProductImages(files);
+    
+    // Create preview URLs
     const previews = files.map(file => URL.createObjectURL(file));
     setImagePreview(previews);
   };
@@ -96,56 +98,56 @@ function EcoSpherePartnerHub() {
   };
 
   const nextStep = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form submission
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const prevStep = (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent form submission
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
-  };
-
-  const submitProduct = async (e) => {
+  };  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
-
+    
     try {
+      console.log('🚀 Submitting product to EcoSphere API...');
+      
+      // Create FormData for file upload
       const formDataToSend = new FormData();
       
       // Add all form fields
       Object.keys(formData).forEach(key => {
-        if (Array.isArray(formData[key])) {
-          formDataToSend.append(key, JSON.stringify(formData[key]));
+        if (key === 'certifications' && Array.isArray(formData[key])) {
+          formData[key].forEach(cert => {
+            formDataToSend.append('certifications[]', cert);
+          });
         } else {
           formDataToSend.append(key, formData[key]);
         }
       });
-
+      
       // Add product images
       productImages.forEach((image, index) => {
-        formDataToSend.append(`productImages`, image);
+        formDataToSend.append('productImages', image);
       });
-
-      console.log('📤 Submitting product with AI EcoScore calculation...');
-      setSubmitStatus('submitting');
-
-      const response = await fetch('/api/products/submit', {
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/products`, {
         method: 'POST',
-        body: formDataToSend,
-        credentials: 'include'
+        body: formDataToSend // Don't set Content-Type header - let browser set it for FormData
       });
-
+      
       const result = await response.json();
       
       if (result.success) {
         console.log('✅ Product submitted successfully:', result);
         setSubmitStatus('success');
         
+        // Show success message with AI-generated EcoScore
         setTimeout(() => {
           alert(`🎉 Success! Your product has been submitted for review.\n\nAI-Generated EcoScore: ${result.data.aiAnalysis.insights.confidence ? Math.round(result.data.product.ecoScore) : 'Calculating...'}/1000\nTier: ${result.data.product.tier}\nImpact Points: ${result.data.product.impactPoints}\n\nYou'll receive an email when approved!`);
           window.location.href = "/submitted";
@@ -163,8 +165,8 @@ function EcoSpherePartnerHub() {
       setIsSubmitting(false);
     }
   };
-
   const getEcoTier = () => {
+    // Show estimated tier based on form completion
     const completionScore = calculateFormCompletion();
     if (completionScore >= 90) return { tier: "🌟 EcoChampion (Estimated)", color: "#006400" };
     if (completionScore >= 75) return { tier: "🌿 EcoPioneer (Estimated)", color: "#228B22" };
@@ -178,7 +180,7 @@ function EcoSpherePartnerHub() {
     const totalFields = Object.keys(formData).length;
     const filledFields = Object.values(formData).filter(value => {
       if (typeof value === 'string') return value.trim() !== '';
-      if (typeof value === 'boolean') return true;
+      if (typeof value === 'boolean') return true; // Booleans always count as filled
       if (Array.isArray(value)) return value.length > 0;
       return value !== null && value !== undefined;
     }).length;
@@ -201,7 +203,6 @@ function EcoSpherePartnerHub() {
                   value={formData.companyName}
                   onChange={handleInputChange}
                   required
-                  placeholder="Your company name"
                 />
               </div>
               <div className="form-group">
@@ -212,7 +213,6 @@ function EcoSpherePartnerHub() {
                   value={formData.productName}
                   onChange={handleInputChange}
                   required
-                  placeholder="Your eco-friendly product name"
                 />
               </div>
               <div className="form-group">
@@ -224,62 +224,56 @@ function EcoSpherePartnerHub() {
                   required
                 >
                   <option value="">Select Category</option>
-                  <option value="Home & Kitchen">Home & Kitchen</option>
-                  <option value="Fashion & Accessories">Fashion & Accessories</option>
-                  <option value="Health & Beauty">Health & Beauty</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Food & Beverages">Food & Beverages</option>
-                  <option value="Garden & Outdoor">Garden & Outdoor</option>
-                  <option value="Baby & Kids">Baby & Kids</option>
-                  <option value="Office & School">Office & School</option>
-                  <option value="Sports & Recreation">Sports & Recreation</option>
-                  <option value="Cleaning & Household">Cleaning & Household</option>
-                  <option value="Other">Other</option>
+                  <option value="home-kitchen">Home & Kitchen</option>
+                  <option value="electronics">Electronics</option>
+                  <option value="clothing">Clothing & Accessories</option>
+                  <option value="health-beauty">Health & Beauty</option>
+                  <option value="sports-outdoors">Sports & Outdoors</option>
+                  <option value="toys-games">Toys & Games</option>
+                  <option value="other">Other</option>
                 </select>
-              </div>
-              <div className="form-group">
-                <label>Price (USD) *</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  required
-                  min="0"
-                  step="0.01"
-                  placeholder="19.99"
-                />
-              </div>
-              <div className="form-group full-width">
+              </div>              <div className="form-group full-width">
                 <label>Product Description *</label>
                 <textarea
                   name="productDescription"
                   value={formData.productDescription}
                   onChange={handleInputChange}
+                  rows="3"
                   required
-                  rows="4"
-                  placeholder="Describe your eco-friendly product, its benefits, and sustainability features..."
+                />
+              </div>
+              <div className="form-group">
+                <label>Price ($) *</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  required
                 />
               </div>
               <div className="form-group full-width">
                 <label>Product Images (Max 10)</label>
                 <input
                   type="file"
-                  multiple
                   accept="image/*"
+                  multiple
                   onChange={handleImageUpload}
                   className="file-input"
                 />
-                <div className="image-preview-grid">
+                <div className="image-preview-container">
                   {imagePreview.map((preview, index) => (
-                    <div key={index} className="image-preview-item">
+                    <div key={index} className="image-preview">
                       <img src={preview} alt={`Preview ${index + 1}`} />
-                      <button
-                        type="button"
+                      <button 
+                        type="button" 
+                        className="remove-image"
                         onClick={() => removeImage(index)}
-                        className="remove-image-btn"
                       >
-                        ✕
+                        ×
                       </button>
                     </div>
                   ))}
@@ -292,40 +286,10 @@ function EcoSpherePartnerHub() {
       case 2:
         return (
           <div className="step-content">
-            <h3>🌍 Environmental Impact</h3>
+            <h3>🌱 Environmental Impact</h3>
             <div className="form-grid">
               <div className="form-group">
-                <label>Carbon Scope 1 (kg CO2) *</label>
-                <input
-                  type="number"
-                  name="carbonScope1"
-                  value={formData.carbonScope1}
-                  onChange={handleInputChange}
-                  placeholder="Direct emissions"
-                />
-              </div>
-              <div className="form-group">
-                <label>Carbon Scope 2 (kg CO2) *</label>
-                <input
-                  type="number"
-                  name="carbonScope2"
-                  value={formData.carbonScope2}
-                  onChange={handleInputChange}
-                  placeholder="Indirect emissions from energy"
-                />
-              </div>
-              <div className="form-group">
-                <label>Carbon Scope 3 (kg CO2)</label>
-                <input
-                  type="number"
-                  name="carbonScope3"
-                  value={formData.carbonScope3}
-                  onChange={handleInputChange}
-                  placeholder="Value chain emissions"
-                />
-              </div>
-              <div className="form-group">
-                <label>Renewable Energy Use (%)</label>
+                <label>Renewable Energy Usage (%) *</label>
                 <input
                   type="number"
                   name="renewableEnergyPercent"
@@ -333,17 +297,18 @@ function EcoSpherePartnerHub() {
                   onChange={handleInputChange}
                   min="0"
                   max="100"
-                  placeholder="0-100"
+                  required
                 />
+                <small>Percentage of renewable energy used in production</small>
               </div>
               <div className="form-group">
-                <label>Water Usage per Unit (Liters)</label>
+                <label>Water Usage (Liters per unit)</label>
                 <input
                   type="number"
                   name="waterUsagePerUnit"
                   value={formData.waterUsagePerUnit}
                   onChange={handleInputChange}
-                  placeholder="Liters used in production"
+                  min="0"
                 />
               </div>
               <div className="form-group">
@@ -355,9 +320,43 @@ function EcoSpherePartnerHub() {
                   onChange={handleInputChange}
                   min="0"
                   max="100"
-                  placeholder="0-100"
                 />
+                <small>Compared to industry standard</small>
               </div>
+              {mode === 'advanced' && (
+                <>
+                  <div className="form-group">
+                    <label>Carbon Scope 1 (Direct Emissions - kg CO2e)</label>
+                    <input
+                      type="number"
+                      name="carbonScope1"
+                      value={formData.carbonScope1}
+                      onChange={handleInputChange}
+                      min="0"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Carbon Scope 2 (Electricity - kg CO2e)</label>
+                    <input
+                      type="number"
+                      name="carbonScope2"
+                      value={formData.carbonScope2}
+                      onChange={handleInputChange}
+                      min="0"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Carbon Scope 3 (Value Chain - kg CO2e)</label>
+                    <input
+                      type="number"
+                      name="carbonScope3"
+                      value={formData.carbonScope3}
+                      onChange={handleInputChange}
+                      min="0"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         );
@@ -368,7 +367,7 @@ function EcoSpherePartnerHub() {
             <h3>📦 Materials & Packaging</h3>
             <div className="form-grid">
               <div className="form-group">
-                <label>Recycled Content (%)</label>
+                <label>Recycled Content (%) *</label>
                 <input
                   type="number"
                   name="recycledContentPercent"
@@ -376,7 +375,7 @@ function EcoSpherePartnerHub() {
                   onChange={handleInputChange}
                   min="0"
                   max="100"
-                  placeholder="0-100"
+                  required
                 />
               </div>
               <div className="form-group">
@@ -388,22 +387,7 @@ function EcoSpherePartnerHub() {
                   onChange={handleInputChange}
                   min="0"
                   max="100"
-                  placeholder="0-100"
                 />
-              </div>
-              <div className="form-group">
-                <label>Toxic Substances</label>
-                <select
-                  name="toxicSubstances"
-                  value={formData.toxicSubstances}
-                  onChange={handleInputChange}
-                >
-                  <option value="none">None</option>
-                  <option value="minimal">Minimal (&lt; 1%)</option>
-                  <option value="low">Low (1-5%)</option>
-                  <option value="moderate">Moderate (5-10%)</option>
-                  <option value="high">High (&gt; 10%)</option>
-                </select>
               </div>
               <div className="form-group">
                 <label>Packaging Weight (grams)</label>
@@ -412,19 +396,20 @@ function EcoSpherePartnerHub() {
                   name="packagingWeight"
                   value={formData.packagingWeight}
                   onChange={handleInputChange}
-                  placeholder="Total packaging weight"
+                  min="0"
                 />
               </div>
               <div className="form-group">
-                <label>Packaging Recyclable</label>
+                <label>Packaging Recyclable? *</label>
                 <select
                   name="packagingRecyclable"
                   value={formData.packagingRecyclable}
                   onChange={handleInputChange}
+                  required
                 >
                   <option value="">Select Option</option>
-                  <option value="yes">Yes, fully recyclable</option>
-                  <option value="partial">Partially recyclable</option>
+                  <option value="yes">Yes, 100% recyclable</option>
+                  <option value="partially">Partially recyclable</option>
                   <option value="no">Not recyclable</option>
                 </select>
               </div>
@@ -436,17 +421,28 @@ function EcoSpherePartnerHub() {
                     checked={formData.plasticFreePackaging}
                     onChange={handleInputChange}
                   />
-                  Plastic-Free Packaging
+                  Plastic-free packaging
                 </label>
+              </div>
+              <div className="form-group">
+                <label>Toxic Substances</label>
+                <select
+                  name="toxicSubstances"
+                  value={formData.toxicSubstances}
+                  onChange={handleInputChange}
+                >
+                  <option value="none">None detected</option>
+                  <option value="minimal">Minimal, within safe limits</option>
+                  <option value="disclosed">Present but disclosed</option>
+                  <option value="unknown">Unknown/Not tested</option>
+                </select>
               </div>
             </div>
           </div>
-        );
-
-      case 4:
+        );      case 4:
         return (
           <div className="step-content">
-            <h3>🚚 Supply Chain & Operations</h3>
+            <h3>� Supply Chain & Operations</h3>
             <div className="form-grid">
               <div className="form-group">
                 <label>Supply Chain Transparency</label>
@@ -536,21 +532,21 @@ function EcoSpherePartnerHub() {
                   value={formData.expectedLifespan}
                   onChange={handleInputChange}
                   min="0"
-                  placeholder="Expected product lifespan"
+                  required
                 />
               </div>
               <div className="form-group">
-                <label>Repairability</label>
+                <label>Repairability Score</label>
                 <select
                   name="repairability"
                   value={formData.repairability}
                   onChange={handleInputChange}
                 >
-                  <option value="">Select Option</option>
-                  <option value="excellent">Excellent - User repairable</option>
-                  <option value="good">Good - Professional repair available</option>
-                  <option value="fair">Fair - Limited repair options</option>
-                  <option value="poor">Poor - Not repairable</option>
+                  <option value="">Select Score</option>
+                  <option value="excellent">Excellent (Easy to repair)</option>
+                  <option value="good">Good (Moderately repairable)</option>
+                  <option value="fair">Fair (Some repair possible)</option>
+                  <option value="poor">Poor (Difficult to repair)</option>
                 </select>
               </div>
               <div className="form-group checkbox-group">
@@ -561,17 +557,17 @@ function EcoSpherePartnerHub() {
                     checked={formData.takeBackProgram}
                     onChange={handleInputChange}
                   />
-                  Take-back Program Available
+                  Take-back/Return Program Available
                 </label>
               </div>
               <div className="form-group full-width">
-                <label>Disposal Guidance</label>
+                <label>End-of-Life Disposal Guidance</label>
                 <textarea
                   name="disposalGuidance"
                   value={formData.disposalGuidance}
                   onChange={handleInputChange}
                   rows="3"
-                  placeholder="Provide instructions for proper disposal or recycling..."
+                  placeholder="Provide instructions for proper disposal/recycling..."
                 />
               </div>
             </div>
@@ -584,141 +580,186 @@ function EcoSpherePartnerHub() {
             <h3>🏆 Certifications</h3>
             <div className="certifications-grid">
               {[
-                'Energy Star', 'EPEAT Gold', 'Cradle to Cradle', 'Forest Stewardship Council (FSC)',
-                'Fair Trade Certified', 'USDA Organic', 'Green Seal', 'UL Environment',
-                'Carbon Trust', 'B Corporation', 'ISO 14001', 'LEED Certified',
-                'Rainforest Alliance', 'EcoLogo', 'GREENGUARD', 'Other'
-              ].map((cert, index) => (
-                <div key={index} className="certification-item">
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={formData.certifications.includes(cert)}
-                      onChange={(e) => handleCertificationChange(cert, e.target.checked)}
-                    />
-                    {cert}
-                  </label>
-                </div>
+                'ISO 14001 (Environmental Management)',
+                'Cradle to Cradle Certified',
+                'Energy Star',
+                'GREENGUARD Certified',
+                'Forest Stewardship Council (FSC)',
+                'EPEAT Registered',
+                'B-Corp Certified',
+                'Fair Trade Certified',
+                'Organic Certification',
+                'LEED Certified',
+                'Carbon Neutral Certified',
+                'Biodegradable Products Institute (BPI)'
+              ].map(cert => (
+                <label key={cert} className="certification-item">
+                  <input
+                    type="checkbox"
+                    checked={formData.certifications.includes(cert)}
+                    onChange={(e) => handleCertificationChange(cert, e.target.checked)}
+                  />
+                  {cert}
+                </label>
               ))}
+            </div>
+            <div className="file-upload-section">
+              <label>Upload Certification Documents</label>
+              <input
+                type="file"
+                multiple
+                accept=".pdf,.jpg,.png,.doc,.docx"
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  certificationFiles: Array.from(e.target.files)
+                }))}
+              />
+              <small>Accepted formats: PDF, JPG, PNG, DOC, DOCX</small>
             </div>
           </div>
         );
 
       default:
-        return <div>Invalid step</div>;
+        return null;
     }
   };
-
-  const ecoTier = getEcoTier();
+  const { tier, color } = getEcoTier();
+  const formCompletion = calculateFormCompletion();
 
   return (
-    <div className="ecosphere-partner-hub">
+    <div className="partner-hub">
       {/* Header */}
-      <div className="partner-header">
-        <h1>🌿 EcoSphere Partner Hub</h1>
-        <p>Join our mission to revolutionize sustainable commerce</p>
-        
-        {/* Mode Toggle */}
-        <div className="mode-toggle">
-          <button 
-            className={mode === 'simplified' ? 'active' : ''}
-            onClick={() => setMode('simplified')}
-          >
-            📋 Simplified Form ({4} steps)
-          </button>
-          <button 
-            className={mode === 'advanced' ? 'active' : ''}
-            onClick={() => setMode('advanced')}
-          >
-            🔬 Advanced Form ({6} steps)
-          </button>
+      <div className="hub-header">
+        <div className="header-content">
+          <h1>🤝 EcoSphere Partner Hub</h1>
+          <p>Join the sustainable commerce revolution</p>
+          
+          {/* Mode Toggle */}
+          <div className="mode-toggle">
+            <button 
+              className={mode === 'simplified' ? 'active' : ''}
+              onClick={() => setMode('simplified')}
+            >
+              Simplified Mode
+            </button>
+            <button 
+              className={mode === 'advanced' ? 'active' : ''}
+              onClick={() => setMode('advanced')}
+            >
+              Advanced Mode
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="progress-container">
+      <div className="progress-section">
         <div className="progress-bar">
           <div 
             className="progress-fill" 
             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
           ></div>
         </div>
-        <span className="progress-text">Step {currentStep} of {totalSteps}</span>
-      </div>
-
-      {/* EcoScore Estimator */}
-      <div className="eco-score-estimator">
-        <div className="score-display">
-          <span className="tier-badge" style={{ backgroundColor: ecoTier.color }}>
-            {ecoTier.tier}
-          </span>
-          <span className="completion-rate">
-            Form Completion: {calculateFormCompletion()}%
-          </span>
+        <div className="progress-text">
+          Step {currentStep} of {totalSteps}
         </div>
       </div>
 
-      {/* Form Content */}
-      <form className="partner-form" onSubmit={currentStep === totalSteps ? submitProduct : nextStep}>
-        {renderStepContent()}
+      {/* Form Completion and EcoScore Preview */}
+      <div className="ecoscore-display">
+        <div className="ecoscore-card">
+          <div className="ecoscore-value" style={{ color }}>
+            {formCompletion}%
+          </div>
+          <div className="ecoscore-tier" style={{ color }}>
+            {tier}
+          </div>
+          <div className="ecoscore-label">Form Completion</div>
+          <div className="ecoscore-note">
+            🤖 AI will calculate final EcoScore (0-1000) after submission
+          </div>
+        </div>
+        
+        {/* Impact Preview */}
+        <div className="impact-preview">
+          <h4>Expected AI Analysis:</h4>
+          <div className="benefits-grid">
+            <div className="benefit-item">
+              <span className="benefit-icon">🌱</span>
+              <span>CO2 Reduction Analysis</span>
+            </div>
+            <div className="benefit-item">
+              <span className="benefit-icon">💧</span>
+              <span>Water Savings Calculation</span>
+            </div>
+            <div className="benefit-item">
+              <span className="benefit-icon">♻️</span>
+              <span>Waste Prevention Assessment</span>
+            </div>
+            <div className="benefit-item">
+              <span className="benefit-icon">🌊</span>
+              <span>Ocean Impact Evaluation</span>
+            </div>
+            <div className="benefit-item">
+              <span className="benefit-icon">🌳</span>
+              <span>Tree Equivalent Calculation</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        {/* Navigation Buttons */}
-        <div className="form-navigation">
-          {currentStep > 1 && (
-            <button type="button" onClick={prevStep} className="btn-secondary">
-              ← Previous
-            </button>
-          )}
+      {/* Main Form */}
+      <div className="form-container">
+        <form onSubmit={handleSubmit}>
+          {renderStepContent()}
           
-          {currentStep < totalSteps ? (
-            <button type="submit" className="btn-primary">
-              Next →
-            </button>
-          ) : (
-            <button 
-              type="submit" 
-              className={`btn-submit ${isSubmitting ? 'submitting' : ''}`}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? '🔄 Submitting...' : '🚀 Submit for AI Analysis & Review'}
-            </button>
-          )}
-        </div>
-      </form>
-
-      {/* Submission Status */}
-      {submitStatus && (
-        <div className={`submission-status ${submitStatus}`}>
-          {submitStatus === 'submitting' && '🔄 Analyzing your product with AI...'}
-          {submitStatus === 'success' && '✅ Product submitted successfully!'}
-          {submitStatus === 'error' && '❌ Submission failed. Please try again.'}
-        </div>
-      )}
-
-      {/* Footer Info */}
-      <div className="partner-footer">
-        <h3>🎯 What happens next?</h3>
-        <div className="process-steps">
-          <div className="process-step">
-            <span className="step-number">1</span>
-            <div>
-              <h4>AI Analysis</h4>
-              <p>Our advanced AI calculates your product's EcoScore and environmental impact</p>
-            </div>
+          {/* Navigation Buttons */}
+          <div className="form-navigation">
+            {currentStep > 1 && (
+              <button type="button" onClick={prevStep} className="btn-secondary">
+                ← Previous
+              </button>
+            )}
+              {currentStep < totalSteps ? (
+              <button type="button" onClick={nextStep} className="btn-primary">
+                Next →
+              </button>
+            ) : (
+              <button 
+                type="submit" 
+                className={`btn-submit ${isSubmitting ? 'submitting' : ''}`}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? '🤖 AI Analyzing...' : 'Submit for AI Analysis 🚀'}
+              </button>
+            )}
           </div>
-          <div className="process-step">
-            <span className="step-number">2</span>
-            <div>
-              <h4>Expert Review</h4>
-              <p>Sustainability experts verify AI calculations and product claims</p>
-            </div>
+        </form>
+      </div>
+
+      {/* Benefits Section */}
+      <div className="benefits-section">
+        <h3>🎯 EcoSphere Partner Benefits</h3>
+        <div className="benefits-grid-large">
+          <div className="benefit-card">
+            <div className="benefit-icon-large">🌟</div>
+            <h4>Premium Visibility</h4>
+            <p>Featured placement in EcoSphere marketplace with sustainability badges</p>
           </div>
-          <div className="process-step">
-            <span className="step-number">3</span>
-            <div>
-              <h4>Launch</h4>
-              <p>Your product goes live on EcoSphere with verified impact metrics</p>
-            </div>
+          <div className="benefit-card">
+            <div className="benefit-icon-large">📊</div>
+            <h4>Impact Analytics</h4>
+            <p>Detailed reports on your environmental impact and customer engagement</p>
+          </div>
+          <div className="benefit-card">
+            <div className="benefit-icon-large">👥</div>
+            <h4>Community Access</h4>
+            <p>Connect with eco-conscious customers and group buying opportunities</p>
+          </div>
+          <div className="benefit-card">
+            <div className="benefit-icon-large">🏆</div>
+            <h4>Recognition Program</h4>
+            <p>Earn sustainability awards and feature in our success stories</p>
           </div>
         </div>
       </div>
