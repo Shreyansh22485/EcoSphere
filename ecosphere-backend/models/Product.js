@@ -59,35 +59,35 @@ const ProductSchema = new mongoose.Schema({
       type: String,
       enum: ['🌟 EcoChampion', '🌿 EcoPioneer', '🌱 EcoSelect', '♻️ EcoAware', '🌍 EcoEntry', '⚠️ Standard'],
       default: '⚠️ Standard'
-    },
-    components: {
+    },    components: {
       carbon: { 
         type: Number, 
         min: 0, 
-        max: 250,
+        max: 300,
         default: 0
       },
       materials: { 
         type: Number, 
         min: 0, 
-        max: 200,
+        max: 250,
         default: 0
       },
       packaging: { 
         type: Number, 
         min: 0, 
-        max: 150,        default: 0
+        max: 200,
+        default: 0
       },
       lifecycle: { 
         type: Number, 
         min: 0,
-        max: 150,
+        max: 200,
         default: 0
       },
       certifications: { 
         type: Number, 
         min: 0, 
-        max: 100,
+        max: 50,
         default: 0
       }
     },
