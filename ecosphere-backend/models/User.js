@@ -24,17 +24,17 @@ const UserSchema = new mongoose.Schema({
     minlength: 6,
     select: false // Don't include password in queries by default
   },
-  
-  // EcoSphere specific fields
+    // EcoSphere specific fields
   impactPoints: { 
     type: Number, 
     default: 0,
     min: 0
   },
-  ecoTier: { 
+  // User eco tier based on impact points (different from product tiers)
+  userTier: { 
     type: String, 
-    enum: ['EcoEntry', 'EcoAware', 'EcoSelect', 'EcoPioneer', 'EcoChampion'],
-    default: 'EcoEntry'
+    enum: ['Seedling', 'Sprout', 'Tree', 'Forest', 'Planet Guardian'],
+    default: 'Seedling'
   },
   
   // Impact tracking (cumulative)
@@ -95,12 +95,28 @@ const UserSchema = new mongoose.Schema({
     targetValue: Number,
     actualValue: Number
   }],
-  
-  // Purchase history reference
+    // Purchase history reference
   orders: [{ 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Order' 
   }],
+  
+  // Eco tier purchase distribution tracking for dashboard analytics
+  ecoTierPurchases: {
+    ecoEntryCount: { type: Number, default: 0 },
+    ecoAwareCount: { type: Number, default: 0 },
+    ecoSelectCount: { type: Number, default: 0 },
+    ecoPioneerCount: { type: Number, default: 0 },
+    ecoChampionCount: { type: Number, default: 0 },
+    standardCount: { type: Number, default: 0 }
+  },
+  
+  // Streak tracking
+  sustainabilityStreak: {
+    current: { type: Number, default: 0 },
+    longest: { type: Number, default: 0 },
+    lastPurchaseDate: { type: Date }
+  },
   
   // User preferences
   preferences: {
@@ -193,32 +209,32 @@ const UserSchema = new mongoose.Schema({
 
 // Virtual for user's current level based on impact points
 UserSchema.virtual('level').get(function() {
-  if (this.impactPoints >= 10000) return 'EcoChampion';
-  if (this.impactPoints >= 5000) return 'EcoPioneer';
-  if (this.impactPoints >= 2500) return 'EcoSelect';
-  if (this.impactPoints >= 1000) return 'EcoAware';
-  return 'EcoEntry';
+  if (this.impactPoints >= 50000) return 'Planet Guardian';
+  if (this.impactPoints >= 10000) return 'Forest';
+  if (this.impactPoints >= 2000) return 'Tree';
+  if (this.impactPoints >= 500) return 'Sprout';
+  return 'Seedling';
 });
 
 // Virtual for progress to next tier
 UserSchema.virtual('tierProgress').get(function() {
   const thresholds = {
-    'EcoEntry': 0,
-    'EcoAware': 1000,
-    'EcoSelect': 2500,
-    'EcoPioneer': 5000,
-    'EcoChampion': 10000
+    'Seedling': 0,
+    'Sprout': 500,
+    'Tree': 2000,
+    'Forest': 10000,
+    'Planet Guardian': 50000
   };
   
   const tiers = Object.keys(thresholds);
-  const currentTierIndex = tiers.indexOf(this.ecoTier);
+  const currentTierIndex = tiers.indexOf(this.userTier);
   
   if (currentTierIndex === tiers.length - 1) {
     return { progress: 100, nextTier: null, pointsToNext: 0 };
   }
   
   const nextTier = tiers[currentTierIndex + 1];
-  const currentThreshold = thresholds[this.ecoTier];
+  const currentThreshold = thresholds[this.userTier];
   const nextThreshold = thresholds[nextTier];
   
   const progress = Math.min(100, 
@@ -235,7 +251,7 @@ UserSchema.virtual('tierProgress').get(function() {
 // Index for performance
 UserSchema.index({ email: 1 });
 UserSchema.index({ impactPoints: -1 });
-UserSchema.index({ ecoTier: 1 });
+UserSchema.index({ userTier: 1 });
 UserSchema.index({ createdAt: -1 });
 
 // Pre-save middleware to hash password
@@ -255,8 +271,8 @@ UserSchema.pre('save', async function(next) {
 UserSchema.pre('save', function(next) {
   if (this.isModified('impactPoints')) {
     const newTier = this.level;
-    if (newTier !== this.ecoTier) {
-      this.ecoTier = newTier;
+    if (newTier !== this.userTier) {
+      this.userTier = newTier;
       this.lastTierUpdate = new Date();
     }
   }
@@ -276,7 +292,7 @@ UserSchema.methods.getTotalImpact = function() {
     waste: this.totalWastePrevented,
     points: this.impactPoints,
     tierInfo: {
-      current: this.ecoTier,
+      current: this.userTier,
       progress: this.tierProgress
     }
   };

@@ -1,29 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const { createOrder, getUserOrders, getOrderDetails, updateOrderStatus } = require('../controllers/orderController');
+const { protect } = require('../middleware/auth');
 
-// Order management
-router.post('/', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Create new order endpoint - Coming Soon',
-    data: req.body
-  });
-});
+// Apply authentication to all order routes
+router.use(protect);
 
-router.get('/', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Get user orders endpoint - Coming Soon'
-  });
-});
+// Create new order
+router.post('/', createOrder);
 
-router.get('/:id', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Get specific order details endpoint - Coming Soon',
-    orderId: req.params.id
-  });
-});
+// Get user orders
+router.get('/', getUserOrders);
+
+// Get specific order details
+router.get('/:id', getOrderDetails);
+
+// Update order status (admin only)
+router.put('/:id/status', updateOrderStatus);
 
 // Group buying
 router.post('/group-buy', (req, res) => {

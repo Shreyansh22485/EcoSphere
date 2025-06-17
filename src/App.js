@@ -25,42 +25,47 @@ import Feedback from "./Component/feedback";
 import ProductDetails from "./Component/ProductDetails";
 import ProductDetails1 from "./Component/ProductDetails1";
 import FSubmitted from "./Component/Feedbacksubmitted";
+import { AuthProvider } from "./hooks/useAuth";
+import { CartProvider } from "./hooks/useCart";
 
 function App() {
   return (
-    // BEM
-    <Router>
-      <div className="app">
-        <Routes>
-          {/* Authentication Routes */}
-          <Route path="/login" element={<Login/>}/> 
-          <Route path="/register-user" element={<UserRegister/>}/> 
-          <Route path="/register-partner" element={<PartnerRegister/>}/> 
-          
-          {/* Partner Routes */}
-          <Route path="/partner-hub" element={[<Headergreen/>, <NavBarg/>, <EcoSpherePartnerHub/>, <Footer/>]}/> 
-          
-          {/* Main Routes */}
-          {/* <Route path="/greenovation" element={<Homegreen/>}/> */}
-          <Route path="/feedbacksubmitted" element={[<Headergreen/>, <NavBarg/>, <FSubmitted/>]}/>
-          <Route path="/feedback" element={[<Headergreen/>, <NavBarg/>, <Feedback/>, <Footer/>]}/> 
-          <Route path="/submitted" element={[<Headergreen/>, <Submitted/>]}/> 
-          <Route path="/ecosphere-partner-hub" element={[<Headergreen/>, <NavBarg/>, <EcoSpherePartnerHub/>, <Footer/>]}/> 
-          <Route path="/thanks" element={[<Header />, <Thanks/>]}/> 
-          <Route path="/orders" element={[<Header />, <Orders/>, <Footer/>]}/>
-          <Route path="/ecosphere-impact" element={[<Headergreen/>,<NavBarg/>, <EcoSphereImpact/>, <Footer/>  ]}/>
-          <Route path="/ecosphere-learn" element={[<Headergreen/>,<NavBarg/>, <EducationSection/>, <Footer/>  ]}/>
-          <Route path="/ecosphere" element={[<Headergreen/>,<NavBarg/>, <Homegreen/>, <Footer/>  ]}/>
-          <Route path="/checkout" element={[<Header />, <Checkout/>, <Footer/>  ]}/>
-          <Route path="/" element={[<Header />, <NavBar/>, <Home />, <Footer/>  ]}/>
-          <Route path="/dashboard" element={[<Header />, <NavBarg/>, <Dashboard/>]} />
-          <Route path="/product/:id" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
-          <Route path="/product" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
-          <Route path="/product1" element={[<Headergreen />, <NavBarg />, <ProductDetails1 />, <Footer />]}/>
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <div className="app">
+            <Routes>
+              {/* Authentication Routes */}
+              <Route path="/login" element={<Login/>}/> 
+              <Route path="/register-user" element={<UserRegister/>}/> 
+              <Route path="/register-partner" element={<PartnerRegister/>}/> 
+              
+              {/* Partner Routes */}
+              <Route path="/partner-hub" element={[<Headergreen/>, <NavBarg/>, <EcoSpherePartnerHub/>, <Footer/>]}/> 
+              
+              {/* Main Routes */}
+              {/* <Route path="/greenovation" element={<Homegreen/>}/> */}
+              <Route path="/feedbacksubmitted" element={[<Headergreen/>, <NavBarg/>, <FSubmitted/>]}/>
+              <Route path="/feedback" element={[<Headergreen/>, <NavBarg/>, <Feedback/>, <Footer/>]}/> 
+              <Route path="/submitted" element={[<Headergreen/>, <Submitted/>]}/> 
+              <Route path="/ecosphere-partner-hub" element={[<Headergreen/>, <NavBarg/>, <EcoSpherePartnerHub/>, <Footer/>]}/> 
+              <Route path="/thanks" element={[<Header />, <Thanks/>]}/> 
+              <Route path="/orders" element={[<Header />, <Orders/>, <Footer/>]}/>
+              <Route path="/ecosphere-impact" element={[<Headergreen/>,<NavBarg/>, <EcoSphereImpact/>, <Footer/>  ]}/>
+              <Route path="/ecosphere-learn" element={[<Headergreen/>,<NavBarg/>, <EducationSection/>, <Footer/>  ]}/>
+              <Route path="/ecosphere" element={[<Headergreen/>,<NavBarg/>, <Homegreen/>, <Footer/>  ]}/>
+              <Route path="/checkout" element={[<Header />, <Checkout/>, <Footer/>  ]}/>
+              <Route path="/" element={[<Header />, <NavBar/>, <Home />, <Footer/>  ]}/>
+              <Route path="/dashboard" element={[<Header />, <NavBarg/>, <Dashboard/>]} />
+              <Route path="/product/:id" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
+              <Route path="/product" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
+              <Route path="/product1" element={[<Headergreen />, <NavBarg />, <ProductDetails1 />, <Footer />]}/>
 
-        </Routes>
-      </div>
-    </Router>
+            </Routes>
+          </div>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

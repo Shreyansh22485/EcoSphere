@@ -12,10 +12,12 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const partnerRoutes = require('./routes/partners');
+const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/orders');
 const impactRoutes = require('./routes/impact');
 const gamificationRoutes = require('./routes/gamification');
 const aiRoutes = require('./routes/ai');
+const dashboardRoutes = require('./routes/dashboard');
 
 // Import middleware
 const { errorHandler } = require('./middleware/error');
@@ -68,10 +70,12 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/partners', partnerRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/impact', impactRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // 404 handler
 app.use('/{*any}', (req, res) => {

@@ -36,11 +36,10 @@ const OrderSchema = new mongoose.Schema({
       type: Number,
       required: true,
       min: 0
-    },
-    ecoScore: {
+    },    ecoScore: {
       type: Number,
       min: 0,
-      max: 100
+      max: 1000  // Allow higher values for some products
     },
     // Impact for this specific item
     impact: {
@@ -57,13 +56,13 @@ const OrderSchema = new mongoose.Schema({
       originalPrice: Number
     }
   }],
-  
-  // Order totals
+    // Order totals
   orderSummary: {
     subtotal: {
       type: Number,
-      required: true,
-      min: 0
+      required: false,
+      min: 0,
+      default: 0
     },
     tax: {
       type: Number,
@@ -82,8 +81,9 @@ const OrderSchema = new mongoose.Schema({
     },
     total: {
       type: Number,
-      required: true,
-      min: 0
+      required: false,
+      min: 0,
+      default: 0
     }
   },
   
@@ -94,35 +94,34 @@ const OrderSchema = new mongoose.Schema({
     wastePrevented: { type: Number, default: 0 }, // kg
     impactPoints: { type: Number, default: 0 }
   },
-  
-  // Shipping information
+    // Shipping information
   shippingAddress: {
-    name: { type: String, required: true },
-    street: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    country: { type: String, required: true },
-    zipCode: { type: String, required: true },
+    name: { type: String, required: false },
+    street: { type: String, required: false },
+    city: { type: String, required: false },
+    state: { type: String, required: false },
+    country: { type: String, required: false },
+    zipCode: { type: String, required: false },
     phone: String
   },
   
   billingAddress: {
-    name: { type: String, required: true },
-    street: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    country: { type: String, required: true },
-    zipCode: { type: String, required: true },
+    name: { type: String, required: false },
+    street: { type: String, required: false },
+    city: { type: String, required: false },
+    state: { type: String, required: false },
+    country: { type: String, required: false },
+    zipCode: { type: String, required: false },
     phone: String,
     sameAsShipping: { type: Boolean, default: true }
   },
-  
-  // Payment information
+    // Payment information
   payment: {
     method: {
       type: String,
       enum: ['credit_card', 'debit_card', 'paypal', 'apple_pay', 'google_pay', 'bank_transfer'],
-      required: true
+      required: false,
+      default: 'credit_card'
     },
     status: {
       type: String,

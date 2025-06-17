@@ -4,10 +4,15 @@ import { FaTruck } from "react-icons/fa";
 import { FaAmazonPay } from "react-icons/fa";
 import { GiCheckedShield, GiLaurelsTrophy } from "react-icons/gi";
 import { useStateValue } from "../StateProvider";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { useCart } from "../hooks/useCart";
 
 function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { addToCart, loading: cartLoading } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -38,21 +43,46 @@ function ProductDetails() {
     } finally {
       setLoading(false);
     }
-  };
-  const addToBasket = () => {
+  };  const addToBasket = async () => {
     if (!product) return;
-    
-    dispatch({
-      type: "ADD_TO_BASKET",
-      item: {
-        id: product._id,
-        title: product.name,
-        image: product.images?.[0]?.url || "../images/eco-placeholder.jpg",
-        price: product.price,
-        rating: Math.round(product.metrics?.averageRating || 4),
-        ecoscore: product.ecoScore?.overall || 0,
-      },
-    });
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      // Store the intended action in localStorage
+      localStorage.setItem('redirectAfterLogin', window.location.pathname);
+      localStorage.setItem('pendingCartAction', JSON.stringify({
+        type: 'ADD_TO_CART',
+        productId: product._id,
+        quantity: 1
+      }));
+      // Redirect to login
+      navigate('/login');
+      return;
+    }
+
+    try {
+      // Add to backend cart
+      await addToCart(product._id, 1);
+      
+      // Also add to local state for immediate UI feedback
+      dispatch({
+        type: "ADD_TO_BASKET",
+        item: {
+          id: product._id,
+          title: product.name,
+          image: product.images?.[0]?.url || "../images/eco-placeholder.jpg",
+          price: product.price,
+          rating: Math.round(product.metrics?.averageRating || 4),
+          ecoscore: product.ecoScore?.overall || 0,
+        },
+      });
+
+      // Show success message
+      alert('🌱 Product added to cart successfully!');
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('❌ Failed to add product to cart. Please try again.');
+    }
   };
 
   const handleImageClick = (image) => {
@@ -244,20 +274,23 @@ function ProductDetails() {
         </div>        <button
           className="addtocart"
           style={{
-            backgroundColor: "#4CAF50",
+            backgroundColor: cartLoading ? "#cccccc" : "#4CAF50",
             color: "white",
             border: "none",
             padding: "15px 30px",
             fontSize: "16px",
             fontWeight: "bold",
             borderRadius: "8px",
-            cursor: "pointer",
+            cursor: cartLoading ? "not-allowed" : "pointer",
             width: "100%",
             marginBottom: "10px"
           }}
           onClick={addToBasket}
+          disabled={cartLoading}
         >
-          Buy with IMPACT (+{impactPoints} Impact Points)
+          {cartLoading ? "Adding to Cart..." : 
+           !isAuthenticated ? "Sign In to Buy with IMPACT" :
+           `Buy with IMPACT (+${impactPoints} Impact Points)`}
         </button>
         
         {product.groupBuying?.enabled && (

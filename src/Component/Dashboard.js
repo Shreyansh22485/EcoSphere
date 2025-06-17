@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BsFillArchiveFill, BsPeopleFill, BsFillBellFill } from 'react-icons/bs';
 import {
   XAxis,
@@ -16,49 +16,69 @@ import {
   Bar
 } from 'recharts';
 import '../Css/Dashboard.css';
+import dashboardService from '../services/dashboardService';
+import { useAuth } from '../hooks/useAuth';
 
 function Dashboard() {
-  // Sample user data - in real app this would come from API
-  const userData = {
-    impactPoints: 2847,
-    rank: 23,
-    totalUsers: 15420,
-    currentStreak: 12,
-    monthlyRank: 8
-  };
+  const { user } = useAuth();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // EcoTier purchase data
-  const tierData = [
-    { name: "🌍 EcoEntry", value: 15, color: "#FF8C00" },
-    { name: "♻️ EcoAware", value: 23, color: "#FFD700" },
-    { name: "🌱 EcoSelect", value: 18, color: "#32CD32" },
-    { name: "🌿 EcoPioneer", value: 12, color: "#228B22" },
-    { name: "🌟 EcoChampion", value: 8, color: "#006400" }
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) return;
+      
+      try {
+        setLoading(true);
+        const response = await dashboardService.getDashboardStats();
+        setDashboardData(response.data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Monthly impact points trend
-  const monthlyData = [
-    { month: 'Jan', points: 420 },
-    { month: 'Feb', points: 680 },
-    { month: 'Mar', points: 890 },
-    { month: 'Apr', points: 1200 },
-    { month: 'May', points: 1850 },
-    { month: 'Jun', points: 2847 }
-  ];
+    fetchDashboardData();
+  }, [user]);
 
-  // Achievement badges
-  const achievementBadges = [
-    { id: 1, name: "🌱 Seedling", description: "First 100 Impact Points", earned: true, date: "Jan 15, 2025" },
-    { id: 2, name: "🌿 Sprout", description: "500 Impact Points", earned: true, date: "Feb 8, 2025" },
-    { id: 3, name: "🌳 Tree", description: "2,000 Impact Points", earned: true, date: "May 12, 2025" },
-    { id: 4, name: "🌲 Forest", description: "10,000 Impact Points", earned: false, date: null },
-    { id: 5, name: "🌍 Planet Guardian", description: "50,000 Impact Points", earned: false, date: null },
-    { id: 6, name: "🔥 Streak Master", description: "30-day sustainable shopping streak", earned: false, date: null },
-    { id: 7, name: "👥 Group Leader", description: "Organized 10 successful group buys", earned: false, date: null },
-    { id: 8, name: "♻️ Circle Champion", description: "Returned 50+ packages", earned: false, date: null },
-    { id: 9, name: "🏆 Leaderboard Legend", description: "Top 10 for 3 consecutive months", earned: false, date: null },
-    { id: 10, name: "💡 Influence Icon", description: "Referred 25+ new EcoSphere users", earned: false, date: null }
-  ];
+  if (!user) {
+    return (
+      <div className="main-container">
+        <div className="main-title">
+          <h2 className="dashboard_text">Please log in to view your dashboard</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="main-container">
+        <div className="main-title">
+          <h2 className="dashboard_text">Loading Dashboard...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !dashboardData) {
+    return (
+      <div className="main-container">
+        <div className="main-title">
+          <h2 className="dashboard_text">ECOSPHERE DASHBOARD</h2>
+        </div>
+        <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+          {error || 'Failed to load dashboard data'}
+        </div>
+      </div>
+    );
+  }
+
+  const { userData, tierData, monthlyData, achievementBadges, projectedImpact } = dashboardData;
 
   const COLORS = ["#FF8C00", "#FFD700", "#32CD32", "#228B22", "#006400"];
 
@@ -76,9 +96,8 @@ function Dashboard() {
               <h3 className="box_title" style={{color: "white"}}>Impact Points</h3>
               <div style={{fontSize: "24px", color: "white"}}>💎</div>
             </div>
-            <h1 style={{color: "white", fontSize: "2.5rem"}}>{userData.impactPoints.toLocaleString()}</h1>
-            <div style={{color: "#E8F5E8", fontSize: "14px", marginTop: "5px"}}>
-              🌳 Tree Level (2,000+ points)
+            <h1 style={{color: "white", fontSize: "2.5rem"}}>{userData.impactPoints.toLocaleString()}</h1>            <div style={{color: "#E8F5E8", fontSize: "14px", marginTop: "5px"}}>
+              🌳 {userData.userTier} Level ({userData.impactPoints}+ points)
             </div>
           </div>
 
@@ -135,12 +154,11 @@ function Dashboard() {
                 fontWeight: "bold"
               }}>
                 🌍 Your Projected Annual Impact:
-              </div>
-              <div style={{lineHeight: "1.8", color: "#555"}}>
-                <div>• 🌱 CO2 Reduction: ~142kg (based on current purchasing patterns)</div>
-                <div>• 💧 Water Savings: ~3,200 liters annually</div>
-                <div>• ♻️ Waste Prevention: ~28kg from landfills</div>
-                <div>• 🎯 Predicted Impact Points: 15,000+ by year-end</div>
+              </div>              <div style={{lineHeight: "1.8", color: "#555"}}>
+                <div>• 🌱 CO2 Reduction: ~{projectedImpact.annualCO2}kg (based on current purchasing patterns)</div>
+                <div>• 💧 Water Savings: ~{projectedImpact.annualWater.toLocaleString()} liters annually</div>
+                <div>• ♻️ Waste Prevention: ~{projectedImpact.annualWaste}kg from landfills</div>
+                <div>• 🎯 Predicted Impact Points: {projectedImpact.annualPoints.toLocaleString()}+ by year-end</div>
               </div>
               <div style={{
                 marginTop: "15px",
@@ -157,58 +175,77 @@ function Dashboard() {
         </div>
 
         {/* Charts Section */}
-        <div className="charts">
-          <div className="card">
+        <div className="charts">          <div className="card">
             <div className="card-inner">
               <h3 className="box_title">EcoTier Purchase Distribution</h3>
             </div>
-            <div className='pie_and_label'>
-              <ResponsiveContainer width="80%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={tierData}
-                    cx="50%"
-                    cy="50%"
-                    startAngle={0}
-                    endAngle={360}
-                    outerRadius={100}
-                    dataKey="value"
-                    stroke="#008000"
-                  >
-                    {tierData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="label-container">
-                {tierData.map((entry, index) => (
-                  <div key={`label-${index}`} className="label-item">
-                    <div 
-                      className="label-color" 
-                      style={{backgroundColor: entry.color}}
-                    ></div>
-                    <span className="label-text">{entry.name}: {entry.value}</span>
-                  </div>
-                ))}
+            {tierData && tierData.length > 0 ? (
+              <div className='pie_and_label'>
+                <ResponsiveContainer width="80%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={tierData}
+                      cx="50%"
+                      cy="50%"
+                      startAngle={0}
+                      endAngle={360}
+                      outerRadius={100}
+                      dataKey="value"
+                      stroke="#008000"
+                    >
+                      {tierData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="label-container">
+                  {tierData.map((entry, index) => (
+                    <div key={`label-${index}`} className="label-item">
+                      <div 
+                        className="label-color" 
+                        style={{backgroundColor: entry.color}}
+                      ></div>
+                      <span className="label-text">{entry.name}: {entry.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
-
-          <div className="card">
+            ) : (
+              <div style={{ 
+                padding: '40px', 
+                textAlign: 'center', 
+                color: '#666',
+                fontSize: '16px' 
+              }}>
+                🛍️ Start shopping eco-friendly products to see your purchase distribution!
+              </div>
+            )}
+          </div>          <div className="card">
             <div className="card-inner">
               <h3 className="box_title">Impact Points Growth</h3>
             </div>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="points" fill="#4CAF50" />
-              </BarChart>
-            </ResponsiveContainer>
+            {monthlyData && monthlyData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="points" fill="#4CAF50" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ 
+                padding: '40px', 
+                textAlign: 'center', 
+                color: '#666',
+                fontSize: '16px' 
+              }}>
+                📈 Your impact points growth will be displayed here after your first purchase!
+              </div>
+            )}
           </div>
         </div>
 

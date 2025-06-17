@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "../Css/Login.css";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { useCart } from "../hooks/useCart";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -10,51 +12,49 @@ function Login() {
   const [showLoginTypeChoice, setShowLoginTypeChoice] = useState(false);
   const [loginType, setLoginType] = useState('');
   const navigate = useNavigate();
-  const handleSignIn = async (e, userType) => {
+  const { login } = useAuth();
+  const { addToCart } = useCart();  const handleSignIn = async (e, userType) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Determine which endpoint to use based on userType
-    let endpoint = '';
-    if (userType === 'customer') {
-      endpoint = `${process.env.REACT_APP_API_URL}/auth/login`;
-    } else if (userType === 'partner') {
-      endpoint = `${process.env.REACT_APP_API_URL}/auth/partner/login`;
-    }
-
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-          if (userType === 'customer') {
-          localStorage.setItem('ecoSphereToken', data.data.token);
-          localStorage.setItem('ecoSphereUserType', 'user');
-          localStorage.setItem('ecoSphereUser', JSON.stringify(data.data.user));
-          alert(`Welcome back, ${data.data.user.name}! 🌱`);
-          window.location.href = '/';
-        } else if (userType === 'partner') {
-          localStorage.setItem('ecoSphereToken', data.data.token);
-          localStorage.setItem('ecoSphereUserType', 'partner');
-          localStorage.setItem('ecoSpherePartner', JSON.stringify(data.data.partner));
-          alert(`Welcome back, ${data.data.partner.companyName}! 🤝`);
-          window.location.href = '/partner-hub';
+      const success = await login(email, password, userType);
+      
+      if (success) {
+        // Handle pending cart action after successful login
+        const pendingCartAction = localStorage.getItem('pendingCartAction');
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        
+        if (pendingCartAction) {
+          try {
+            const action = JSON.parse(pendingCartAction);
+            if (action.type === 'ADD_TO_CART') {
+              await addToCart(action.productId, action.quantity);
+              alert('🌱 Product added to cart successfully!');
+            }
+          } catch (error) {
+            console.error('Error handling pending cart action:', error);
+          }
+          // Clear pending action
+          localStorage.removeItem('pendingCartAction');
         }
-        return;
-      } else {
-        const errorData = await response.json();
-        alert(`❌ ${errorData.message || 'Invalid credentials'}`);
+        
+        // Clear redirect path
+        localStorage.removeItem('redirectAfterLogin');
+        
+        // Navigate to redirect path or default
+        if (redirectPath) {
+          navigate(redirectPath);
+        } else if (userType === 'customer') {
+          navigate('/');
+        } else if (userType === 'partner') {
+          navigate('/partner-hub');
+        }
       }
       
     } catch (error) {
       console.error('Login error:', error);
-      alert('❌ Network error. Please try again.');
+      alert('❌ Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
