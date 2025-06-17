@@ -7,11 +7,119 @@
     padding: 20px;
     background-color: white;
     height: max-content;
+    gap: 20px;
+  }
+  .checkout__left {
+    flex: 1;
+  }
+  .checkout__right {
+    width: 350px;
   }
   .checkout__title {
     margin-right: 10px;
     padding: 10px;
     border-bottom: 1px solid lightgray;
+    font-size: 28px;
+    color: #333;
+  }
+  .empty-cart {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+  }
+  .empty-cart h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+  }
+  .shop-now-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .shop-now-btn:hover {
+    background: #45a049;
+  }
+  .eco-rewards-section {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  .eco-rewards-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .eco-rewards-header h3 {
+    margin: 0;
+    font-size: 20px;
+  }
+  .tier-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .eco-discount-offer p {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+  }
+  .apply-discount-btn {
+    background: white;
+    color: #4CAF50;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .apply-discount-btn:hover:not(:disabled) {
+    background: #f0f0f0;
+  }
+  .apply-discount-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  .discount-applied {
+    background: rgba(255,255,255,0.2);
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .cart-items {
+    margin: 20px 0;
+  }
+  .return-package-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50;
+    margin-top: 30px;
+  }
+  .return-package-section h3 {
+    margin: 0 0 10px 0;
+    color: #4CAF50;
+  }
+  .return-package-section p {
+    margin: 0 0 15px 0;
+    color: #666;
+  }
+  .return-info {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+    color: #4CAF50;
+    font-weight: 600;
   }
   .ecofriendly {
     color: #62be3a;

@@ -5,7 +5,9 @@ const {
   addToCart,
   updateCartItem,
   removeFromCart,
-  clearCart
+  clearCart,
+  applyEcoDiscount,
+  returnPackage
 } = require('../controllers/cartController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -19,5 +21,9 @@ router.post('/add', addToCart);
 router.put('/update', updateCartItem);
 router.delete('/remove/:productId', removeFromCart);
 router.delete('/clear', clearCart);
+
+// Eco rewards routes
+router.post('/apply-eco-discount', applyEcoDiscount);
+router.post('/return-package', returnPackage);
 
 module.exports = router;

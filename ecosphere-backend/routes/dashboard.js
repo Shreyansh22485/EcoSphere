@@ -179,8 +179,7 @@ router.get('/stats', protect, async (req, res) => {
 
     res.json({
       success: true,
-      data: {
-        userData: {
+      data: {        userData: {
           impactPoints: user.impactPoints,
           rank: globalRank,
           totalUsers,
@@ -189,7 +188,10 @@ router.get('/stats', protect, async (req, res) => {
           userTier: user.userTier,
           totalCarbonSaved: user.totalCarbonSaved,
           totalWaterSaved: user.totalWaterSaved,
-          totalWastePrevented: user.totalWastePrevented
+          totalWastePrevented: user.totalWastePrevented,
+          availableEcoDiscount: user.availableEcoDiscount,
+          packageReturns: user.ecoRewards?.packageReturns || 0,
+          returnBonusEarned: user.ecoRewards?.returnBonusEarned || 0
         },
         tierData,
         monthlyData: monthlyTrend,

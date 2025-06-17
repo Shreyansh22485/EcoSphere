@@ -57,8 +57,32 @@ class CartService {
     }
   }
 
-  // Calculate cart totals with impact metrics
-  calculateCartTotals(cartItems) {
+  // Apply eco discount
+  async applyEcoDiscount() {
+    try {
+      const response = await apiService.post('/cart/apply-eco-discount');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to apply eco discount');
+    }
+  }
+
+  // Process package return
+  async returnPackage(orderId, productId, reason = '') {
+    try {
+      const response = await apiService.post('/cart/return-package', {
+        orderId,
+        productId,
+        reason
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Failed to process return');
+    }
+  }
+
+  // Calculate cart totals with impact metrics and eco discount
+  calculateCartTotals(cartItems, ecoDiscountPercent = 0) {
     const totals = cartItems.reduce(
       (acc, item) => {
         const itemTotal = item.price * item.quantity;
@@ -86,12 +110,14 @@ class CartService {
     // Calculate tax and shipping
     const tax = totals.subtotal * 0.08; // 8% tax
     const shipping = totals.subtotal > 50 ? 0 : 5.99; // Free shipping over $50
-    const total = totals.subtotal + tax + shipping;
+    const ecoDiscount = (totals.subtotal + tax + shipping) * (ecoDiscountPercent / 100);
+    const total = totals.subtotal + tax + shipping - ecoDiscount;
 
     return {
       ...totals,
       tax,
       shipping,
+      ecoDiscount,
       total
     };
   }

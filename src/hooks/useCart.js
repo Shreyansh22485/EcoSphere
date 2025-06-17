@@ -7,11 +7,12 @@ const CartContext = createContext();
 
 // Cart Provider Component
 export const CartProvider = ({ children }) => {
-  const [cartItems, setCartItems] = useState([]);
-  const [cartTotals, setCartTotals] = useState({
+  const [cartItems, setCartItems] = useState([]);  const [cartTotals, setCartTotals] = useState({
     subtotal: 0,
     total: 0,
-    itemCount: 0
+    itemCount: 0,
+    tax: 0,
+    shipping: 0
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,26 +22,29 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated) {
       loadCart();
-    } else {
-      // Clear cart if user logs out
+    } else {      // Clear cart if user logs out
       setCartItems([]);
-      setCartTotals({ subtotal: 0, total: 0, itemCount: 0 });
+      setCartTotals({ subtotal: 0, total: 0, itemCount: 0, tax: 0, shipping: 0 });
     }
-  }, [isAuthenticated]);
-
-  const loadCart = async () => {
+  }, [isAuthenticated]);  const loadCart = async () => {
     if (!isAuthenticated) return;
     
     try {
       setLoading(true);
+      console.log('useCart - Loading cart...'); // Debug log
       const result = await cartService.getCart();
+      console.log('useCart - Cart result:', result); // Debug log
       if (result.success) {
+        console.log('useCart - Cart items:', result.data.items); // Debug log
         setCartItems(result.data.items || []);
         setCartTotals({
-          subtotal: result.data.subtotal || 0,
-          total: result.data.total || 0,
-          itemCount: result.data.itemCount || 0
+          subtotal: result.data.totals?.subtotal || 0,
+          total: result.data.totals?.total || 0,
+          itemCount: result.data.totals?.totalItems || 0,
+          tax: result.data.totals?.tax || 0,
+          shipping: result.data.totals?.shipping || 0
         });
+        setError(null);
       }
     } catch (error) {
       console.error('Error loading cart:', error);
@@ -56,14 +60,15 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      setLoading(true);
-      const result = await cartService.addToCart(productId, quantity);
+      setLoading(true);      const result = await cartService.addToCart(productId, quantity);
       if (result.success) {
         setCartItems(result.data.items);
         setCartTotals({
-          subtotal: result.data.subtotal,
-          total: result.data.total,
-          itemCount: result.data.itemCount
+          subtotal: result.data.totals?.subtotal || 0,
+          total: result.data.totals?.total || 0,
+          itemCount: result.data.totals?.totalItems || 0,
+          tax: result.data.totals?.tax || 0,
+          shipping: result.data.totals?.shipping || 0
         });
       }
       return result;
@@ -78,14 +83,15 @@ export const CartProvider = ({ children }) => {
 
   const updateCartItem = async (productId, quantity) => {
     try {
-      setLoading(true);
-      const result = await cartService.updateCartItem(productId, quantity);
+      setLoading(true);      const result = await cartService.updateCartItem(productId, quantity);
       if (result.success) {
         setCartItems(result.data.items);
         setCartTotals({
-          subtotal: result.data.subtotal,
-          total: result.data.total,
-          itemCount: result.data.itemCount
+          subtotal: result.data.totals?.subtotal || 0,
+          total: result.data.totals?.total || 0,
+          itemCount: result.data.totals?.totalItems || 0,
+          tax: result.data.totals?.tax || 0,
+          shipping: result.data.totals?.shipping || 0
         });
       }
     } catch (error) {
@@ -98,14 +104,15 @@ export const CartProvider = ({ children }) => {
 
   const removeFromCart = async (productId) => {
     try {
-      setLoading(true);
-      const result = await cartService.removeFromCart(productId);
+      setLoading(true);      const result = await cartService.removeFromCart(productId);
       if (result.success) {
         setCartItems(result.data.items);
         setCartTotals({
-          subtotal: result.data.subtotal,
-          total: result.data.total,
-          itemCount: result.data.itemCount
+          subtotal: result.data.totals?.subtotal || 0,
+          total: result.data.totals?.total || 0,
+          itemCount: result.data.totals?.totalItems || 0,
+          tax: result.data.totals?.tax || 0,
+          shipping: result.data.totals?.shipping || 0
         });
       }
     } catch (error) {
@@ -120,12 +127,13 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
       const result = await cartService.clearCart();
-      if (result.success) {
-        setCartItems([]);
+      if (result.success) {        setCartItems([]);
         setCartTotals({
           subtotal: 0,
           total: 0,
-          itemCount: 0
+          itemCount: 0,
+          tax: 0,
+          shipping: 0
         });
       }
     } catch (error) {

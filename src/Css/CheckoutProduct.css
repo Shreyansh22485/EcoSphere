@@ -1,31 +1,128 @@
 .checkoutProduct {
-    display: flex;
-    margin-top: 20px;
-    margin-bottom: 20px;
-  }
-  .checkoutProduct__info {
-    padding-left: 20px;
-  }
-  
-  .checkoutProduct__info > button {
-    background: #f0c14b;
-    height: 30px;
-    margin-top: 10px;
-    border: 1px solid;
-    border-radius: 3px;
-    margin-top: 10px;
-    border-color: #a88734, #9c7e31, #846a29;
-    color: #111;
-  }
-  .checkoutProduct__image {
-    object-fit: contain;
-    height: 180px;
-    width: 180px;
-  }
-  .checkoutProduct__rating {
-    display: flex;
-  }
-  .checkoutProduct__title {
-    font-size: 17px;
-    font-weight: 800;
-  }
+  display: flex;
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.checkoutProduct__image {
+  object-fit: contain;
+  height: 180px;
+  width: 180px;
+  border-radius: 8px;
+}
+
+.checkoutProduct__info {
+  padding-left: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkoutProduct__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.checkoutProduct__price {
+  font-size: 20px;
+  color: #4CAF50;
+  margin: 0;
+}
+
+.price__each {
+  font-size: 14px;
+  color: #666;
+  margin-left: 5px;
+}
+
+.checkoutProduct__rating {
+  display: flex;
+  gap: 2px;
+}
+
+.checkoutProduct__eco {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.eco-score {
+  font-size: 14px;
+  color: #666;
+}
+
+.checkoutProduct__quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.quantity-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #ddd;
+  background: #f8f8f8;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: #e8e8e8;
+  border-color: #ccc;
+}
+
+.quantity-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-display {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: center;
+}
+
+.checkoutProduct__total {
+  font-size: 18px;
+  color: #4CAF50;
+  margin: 10px 0;
+}
+
+.checkoutProduct__actions {
+  margin-top: auto;
+}
+
+.remove-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.remove-btn:hover:not(:disabled) {
+  background: #ff5252;
+}
+
+.remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

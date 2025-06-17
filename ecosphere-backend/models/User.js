@@ -124,6 +124,14 @@ const UserSchema = new mongoose.Schema({
     default: new Map()
   },
   
+  // Eco Rewards System - Tier-based discounts
+  ecoRewards: {
+    availableDiscount: { type: Number, default: 0 }, // Current available discount %
+    totalDiscountUsed: { type: Number, default: 0 }, // Lifetime discount used in $
+    packageReturns: { type: Number, default: 0 }, // Number of packages returned
+    returnBonusEarned: { type: Number, default: 0 } // Total bonus points from returns
+  },
+  
   // User preferences
   preferences: {
     notifications: { 
@@ -252,6 +260,19 @@ UserSchema.virtual('tierProgress').get(function() {
     nextTier,
     pointsToNext: Math.max(0, nextThreshold - this.impactPoints)
   };
+});
+
+// Virtual for available eco discount based on user tier
+UserSchema.virtual('availableEcoDiscount').get(function() {
+  const tierDiscounts = {
+    'Seedling': 0,      // 0% discount
+    'Sprout': 5,        // 5% discount
+    'Tree': 10,         // 10% discount
+    'Forest': 15,       // 15% discount
+    'Planet Guardian': 20 // 20% discount
+  };
+  
+  return tierDiscounts[this.userTier] || 0;
 });
 
 // Index for performance

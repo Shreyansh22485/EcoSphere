@@ -229,10 +229,115 @@ const clearCart = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * @desc    Apply eco discount to cart
+ * @route   POST /api/cart/apply-eco-discount
+ * @access  Private (Users only)
+ */
+const applyEcoDiscount = asyncHandler(async (req, res) => {
+  const User = require('../models/User');
+  
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  const availableDiscount = user.availableEcoDiscount;
+  if (availableDiscount === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'No eco discount available for your tier'
+    });
+  }
+
+  const cart = await Cart.findOne({ user: req.user._id })
+    .populate('items.product', 'name price');
+
+  if (!cart || cart.items.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Cart is empty'
+    });
+  }
+
+  // Apply discount flag to cart (could be stored in cart model)
+  // For now, we'll return the discount percentage to be applied on frontend
+  res.status(200).json({
+    success: true,
+    message: `${availableDiscount}% eco discount applied successfully!`,
+    data: {
+      discountPercent: availableDiscount,
+      userTier: user.userTier
+    }
+  });
+});
+
+/**
+ * @desc    Process package return
+ * @route   POST /api/cart/return-package
+ * @access  Private (Users only)
+ */
+const returnPackage = asyncHandler(async (req, res) => {
+  const { orderId, productId, reason } = req.body;
+  const User = require('../models/User');
+  const Order = require('../models/Order');
+
+  // Validate the order belongs to the user
+  const order = await Order.findOne({ 
+    _id: orderId, 
+    customer: req.user._id 
+  }).populate('orderItems.product', 'name');
+
+  if (!order) {
+    return res.status(404).json({
+      success: false,
+      message: 'Order not found'
+    });
+  }
+
+  // Check if product is in the order
+  const orderItem = order.orderItems.find(item => 
+    item.product._id.toString() === productId
+  );
+
+  if (!orderItem) {
+    return res.status(400).json({
+      success: false,
+      message: 'Product not found in this order'
+    });
+  }
+
+  // Award return bonus points (10 points per return)
+  const bonusPoints = 10;
+  
+  await User.findByIdAndUpdate(req.user._id, {
+    $inc: { 
+      'impactPoints': bonusPoints,
+      'ecoRewards.packageReturns': 1,
+      'ecoRewards.returnBonusEarned': bonusPoints
+    }
+  });
+
+  res.status(200).json({
+    success: true,
+    message: `Package return processed successfully! You earned ${bonusPoints} bonus impact points.`,
+    data: {
+      bonusPoints,
+      productName: orderItem.product.name,
+      returnDate: new Date()
+    }
+  });
+});
+
 module.exports = {
   getCart,
   addToCart,
   updateCartItem,
   removeFromCart,
-  clearCart
+  clearCart,
+  applyEcoDiscount,
+  returnPackage
 };

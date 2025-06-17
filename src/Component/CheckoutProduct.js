@@ -1,41 +1,143 @@
-import React from "react";
+import React, { useState } from "react";
 import "../Css/CheckoutProduct.css";
-import { useStateValue } from "../StateProvider";
+import { useAuth } from "../hooks/useAuth";
+import cartService from "../services/cartService";
 
-function CheckoutProduct({ id, image, title, price, rating, badge_id }) {
-  const [{ basket }, dispatch] = useStateValue();
+function CheckoutProduct({ 
+  id, 
+  image, 
+  title, 
+  price, 
+  rating, 
+  badge_id, 
+  quantity = 1, 
+  ecoScore,
+  onQuantityChange,
+  onRemove 
+}) {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [currentQuantity, setCurrentQuantity] = useState(quantity);
 
-  const removeFromBasket = () => {
-    dispatch({
-      type: "REMOVE_FROM_BASKET",
-      id: id,
-    });
+  const handleQuantityChange = async (newQuantity) => {
+    if (newQuantity < 0) return;
+    
+    setLoading(true);
+    try {
+      if (newQuantity === 0) {
+        // Remove item completely
+        await cartService.removeFromCart(id);
+        onRemove(id);
+      } else {
+        // Update quantity
+        await cartService.updateCartItem(id, newQuantity);
+        setCurrentQuantity(newQuantity);
+        onQuantityChange(id, newQuantity);
+      }
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  let eco_friendly = "";
+  const handleRemove = async () => {
+    setLoading(true);
+    try {
+      await cartService.removeFromCart(id);
+      onRemove(id);
+    } catch (error) {
+      console.error('Error removing item:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  if (badge_id > 0){
-    eco_friendly = "Eco-Friendly";
-  }
+  const getEcoTier = (score) => {
+    if (score >= 90) return { tier: 'EcoChampion', color: '#006400' };
+    if (score >= 75) return { tier: 'EcoPioneer', color: '#228B22' };
+    if (score >= 60) return { tier: 'EcoSelect', color: '#32CD32' };
+    if (score >= 45) return { tier: 'EcoAware', color: '#FFD700' };
+    if (score >= 30) return { tier: 'EcoEntry', color: '#FF8C00' };
+    return { tier: 'Standard', color: '#666' };
+  };
+
+  const ecoTier = getEcoTier(ecoScore || 0);
+  const itemTotal = (price * currentQuantity).toFixed(2);
 
   return (
     <div className="checkoutProduct">
-      <img src={image} alt="" className="checkoutProduct__image" />
+      <img src={image} alt={title} className="checkoutProduct__image" />
+      
       <div className="checkoutProduct__info">
         <p className="checkoutProduct__title">{title}</p>
-        <p className="checkoutProduct__price">
+        
+        <div className="checkoutProduct__price">
           <small>$</small>
           <strong>{price}</strong>
-        </p>
-        <p className="checkoutProduct__rating">
+          <span className="price__each"> each</span>
+        </div>
+        
+        <div className="checkoutProduct__rating">
           {Array(rating)
             .fill()
-            .map((rate) => (
-              <p>⭐</p>
+            .map((_, index) => (
+              <span key={index}>⭐</span>
             ))}
-        </p>
-        <p className="ecofriendly">{eco_friendly}</p>
-        <button onClick={removeFromBasket}>Remove from basket</button>
+        </div>
+
+        {ecoScore > 0 && (
+          <div className="checkoutProduct__eco">
+            <span 
+              className="eco-badge" 
+              style={{ 
+                backgroundColor: ecoTier.color,
+                color: 'white',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}
+            >
+              🌱 {ecoTier.tier}
+            </span>
+            <span className="eco-score">Eco Score: {ecoScore}/100</span>
+          </div>
+        )}
+
+        <div className="checkoutProduct__quantity">
+          <button 
+            className="quantity-btn minus" 
+            onClick={() => handleQuantityChange(currentQuantity - 1)}
+            disabled={loading}
+            aria-label="Decrease quantity"
+          >
+            -
+          </button>
+          <span className="quantity-display">{currentQuantity}</span>
+          <button 
+            className="quantity-btn plus" 
+            onClick={() => handleQuantityChange(currentQuantity + 1)}
+            disabled={loading}
+            aria-label="Increase quantity"
+          >
+            +
+          </button>
+        </div>
+
+        <div className="checkoutProduct__total">
+          <strong>Total: ${itemTotal}</strong>
+        </div>
+
+        <div className="checkoutProduct__actions">
+          <button 
+            className="remove-btn" 
+            onClick={handleRemove}
+            disabled={loading}
+          >
+            {loading ? 'Removing...' : 'Remove from Cart'}
+          </button>
+        </div>
       </div>
     </div>
   );
