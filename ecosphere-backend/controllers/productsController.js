@@ -27,10 +27,11 @@ const getProducts = asyncHandler(async (req, res) => {
   if (minEcoScore) query['ecoScore.overall'] = { ...query['ecoScore.overall'], $gte: parseInt(minEcoScore) };
   if (maxEcoScore) query['ecoScore.overall'] = { ...query['ecoScore.overall'], $lte: parseInt(maxEcoScore) };
   if (minPrice) query.price = { ...query.price, $gte: parseFloat(minPrice) };
-  if (maxPrice) query.price = { ...query.price, $lte: parseFloat(maxPrice) };  // Execute query with pagination
+  if (maxPrice) query.price = { ...query.price, $lte: parseFloat(maxPrice) };
+  // Execute query with pagination
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const products = await Product.find(query)
-    .populate('partner', 'companyName') // Only populate companyName
+    .populate('partner', 'companyName status sustainabilityScore')
     .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
     .skip(skip)
     .limit(parseInt(limit));
@@ -54,7 +55,7 @@ const getProducts = asyncHandler(async (req, res) => {
  */
 const getProduct = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id)
-    .populate('partner', 'companyName'); // Only populate companyName
+    .populate('partner', 'companyName status sustainabilityScore address');
 
   if (!product) {
     return res.status(404).json({

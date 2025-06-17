@@ -129,52 +129,17 @@ function ProductDetails() {
             <div style={{fontSize: "18px", fontWeight: "bold", color: "#2e7d32", marginBottom: "15px"}}>
               💎 Earn {impactPoints} Impact Points with this purchase
             </div>
-              <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginBottom: "10px"}}>
+            
+            <div style={{fontSize: "16px", fontWeight: "bold", color: "#1b5e20", marginBottom: "10px"}}>
               🌍 Your Environmental Impact:
-            </div>            <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
-              <div 
-                className="impact-metric"
-                title={product.ecoScore?.aiInsights?.carbonReduced?.description || "CO2 reduction compared to conventional alternatives"}
-              >
-                ├── 🌱 CO2 Reduced: {product.ecoScore?.aiInsights?.carbonReduced?.value || 0}kg vs conventional product
-              </div>
-              <div 
-                className="impact-metric"
-                title={product.ecoScore?.aiInsights?.waterSaved?.description || "Water saved in production process"}
-              >
-                ├── 💧 Water Saved: {product.ecoScore?.aiInsights?.waterSaved?.value || 0} liters in production
-              </div>
-              <div 
-                className="impact-metric"
-                title={product.ecoScore?.aiInsights?.wastePrevented?.description || "Waste prevented from reaching landfill"}
-              >
-                ├── ♻️ Waste Prevented: {product.ecoScore?.aiInsights?.wastePrevented?.value || 0}kg from landfill
-              </div>
-              <div 
-                className="impact-metric"
-                title={product.ecoScore?.aiInsights?.oceanPlasticDiverted?.description || "Ocean plastic bottles diverted"}
-              >
-                ├── 🌊 Ocean Plastic: {product.ecoScore?.aiInsights?.oceanPlasticDiverted?.value || 0} bottles diverted
-              </div>
-              <div 
-                className="impact-metric"
-                title={product.ecoScore?.aiInsights?.treeEquivalent?.description || "Tree equivalent saved through sustainable practices"}
-              >
-                └── 🌳 Tree Equivalent: {product.ecoScore?.aiInsights?.treeEquivalent?.value || 0} trees saved
-              </div>
             </div>
-
-            {/* AI Insights Summary */}
-            {product.ecoScore?.aiInsights?.summary && (
-              <div className="ai-insights-summary">
-                <div className="ai-insights-title">
-                  AI Impact Analysis:
-                </div>
-                <div className="ai-insights-text">
-                  "{product.ecoScore?.aiInsights?.summary}"
-                </div>
-              </div>
-            )}
+            <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
+              <div>├── 🌱 CO2 Reduced: {product.ecoScore?.aiInsights?.carbonReduced?.value || 0}kg vs conventional product</div>
+              <div>├── 💧 Water Saved: {product.ecoScore?.aiInsights?.waterSaved?.value || 0} liters in production</div>
+              <div>├── ♻️ Waste Prevented: {product.ecoScore?.aiInsights?.wastePrevented?.value || 0}kg from landfill</div>
+              <div>├── 🌊 Ocean Plastic: {product.ecoScore?.aiInsights?.oceanPlasticDiverted?.value || 0} bottles diverted</div>
+              <div>└── 🌳 Tree Equivalent: {product.ecoScore?.aiInsights?.treeEquivalent?.value || 0} trees saved</div>
+            </div>
 
             {product.groupBuying?.enabled && (
               <>
@@ -183,7 +148,9 @@ function ProductDetails() {
                 </div>
                 <div style={{paddingLeft: "20px", lineHeight: "1.8", color: "#2e7d32"}}>
                   <div>├── Individual Impact: {product.ecoScore?.aiInsights?.carbonReduced?.value || 0}kg CO2 saved</div>
-                  <div>└── Group Impact: {((product.ecoScore?.aiInsights?.carbonReduced?.value || 0) * (product.groupBuying?.minQuantity || 1)).toFixed(1)}kg CO2 saved ({product.groupBuying?.minQuantity || 1} people)</div>
+                  <div>├── Group Impact: {((product.ecoScore?.aiInsights?.carbonReduced?.value || 0) * (product.groupBuying?.minQuantity || 1)).toFixed(1)}kg CO2 saved ({product.groupBuying?.minQuantity || 1} people)</div>
+                  <div>├── Shipping Reduction: Additional 15kg CO2 saved</div>
+                  <div>└── Total Group Benefit: {((product.ecoScore?.aiInsights?.carbonReduced?.value || 0) * (product.groupBuying?.minQuantity || 1) + 15).toFixed(1)}kg CO2 prevented</div>
                 </div>
               </>
             )}
