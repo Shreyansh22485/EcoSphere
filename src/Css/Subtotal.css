@@ -46,6 +46,13 @@
   font-weight: 600;
 }
 
+.bonus-points {
+  font-size: 12px;
+  color: #ff9800;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
 .order-summary {
   background: white;
   padding: 15px;
@@ -132,14 +139,31 @@
   color: #666;
 }
 
+.return-program-selected {
+  background: #e8f5e8;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #4CAF50;
+  margin-top: 10px;
+}
+
+.return-program-selected h4 {
+  margin: 0 0 10px 0;
+  color: #2e7d32;
+  font-size: 16px;
+}
+
+.return-program-selected p {
+  margin: 0 0 10px 0;
+  color: #2e7d32;
+  font-size: 14px;
+}
+
 .return-benefits {
   display: flex;
   flex-direction: column;
   gap: 5px;
-}
-
-.return-benefits span {
   font-size: 12px;
-  color: #17a2b8;
+  color: #4CAF50;
   font-weight: 600;
 }

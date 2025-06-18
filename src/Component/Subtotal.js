@@ -7,7 +7,7 @@ import { useCart } from "../hooks/useCart";
 import { orderService } from "../services/orderService";
 import cartService from "../services/cartService";
 
-const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
+const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0, ecoReturnSelected = false }) => {
   const { isAuthenticated } = useAuth();
   const { clearCart, cartTotals } = useCart();
   const navigate = useNavigate();
@@ -18,8 +18,7 @@ const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
     return cartItems.reduce((acc, item) => {
       const impact = item.product.impactPerPurchase || {};
       const quantity = item.quantity;
-      
-      return {
+        return {
         totalImpactPoints: acc.totalImpactPoints + ((impact.impactPoints || 0) * quantity),
         totalCarbonSaved: acc.totalCarbonSaved + ((impact.carbonSaved || 0) * quantity),
         totalWaterSaved: acc.totalWaterSaved + ((impact.waterSaved || 0) * quantity),
@@ -34,6 +33,10 @@ const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
   };
 
   const impactMetrics = calculateImpactMetrics();
+  
+  // Add bonus points for eco return program
+  const bonusImpactPoints = ecoReturnSelected ? 10 : 0;
+  const totalImpactPoints = impactMetrics.totalImpactPoints + bonusImpactPoints;
   
   // Calculate eco discount amount
   const discountAmount = ecoDiscountPercent > 0 
@@ -62,11 +65,10 @@ const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
         productId: item.product._id,
         quantity: item.quantity,
         price: item.product.price
-      }));
-
-      // Create order and process payment
+      }));      // Create order and process payment
       const orderResult = await orderService.createOrder({
         items: orderItems,
+        ecoReturnSelected: ecoReturnSelected, // Pass eco return selection to backend
         shippingAddress: {
           street: "123 Eco Street", // In real app, get from user input
           city: "Green City",
@@ -74,11 +76,12 @@ const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
           zipCode: "12345",
           country: "USA"
         }
-      });      if (orderResult.success) {
+      });if (orderResult.success) {
         // Clear cart after successful order
         await clearCart();        // Show success message with impact points
-        const totalImpactPoints = orderResult.data.totalImpact?.impactPoints || 0;
-        alert(`🎉 Order placed successfully! You earned ${totalImpactPoints} Impact Points for choosing eco-friendly products!`);
+        const orderImpactPoints = orderResult.data.totalImpact?.impactPoints || 0;
+        const returnBonusMessage = ecoReturnSelected ? " You'll receive return instructions via email!" : "";
+        alert(`🎉 Order placed successfully! You earned ${orderImpactPoints} Impact Points for choosing eco-friendly products!${returnBonusMessage}`);
         
         // Navigate to thanks page
         navigate('/thanks');
@@ -100,7 +103,10 @@ const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
         <h3>🌱 Your Environmental Impact</h3>        <div className="impact-metrics">
           <div className="impact-item">
             <span>💎 Impact Points:</span>
-            <strong>+{impactMetrics.totalImpactPoints}</strong>
+            <strong>+{totalImpactPoints}</strong>
+            {bonusImpactPoints > 0 && (
+              <span className="bonus-points"> (includes +{bonusImpactPoints} bonus from Eco Return)</span>
+            )}
           </div>
           <div className="impact-item">
             <span>🌍 CO₂ Saved:</span>
@@ -180,18 +186,18 @@ const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
         <Link to="/green" className="proceed">
           Start Shopping Eco Products
         </Link>
-      )}
-
-      {/* Package Return Information */}
-      <div className="return-program-info">
-        <h4>♻️ Eco Return Program</h4>
-        <p>Return your packages after use to earn bonus points and support sustainability!</p>
-        <div className="return-benefits">
-          <span>🎁 +10 Impact Points per return</span>
-          <span>🚚 Free return shipping</span>
-          <span>🌍 Reduce environmental impact</span>
+      )}      {/* Package Return Information */}
+      {ecoReturnSelected && (
+        <div className="return-program-selected">
+          <h4>✅ Eco Return Program Selected</h4>
+          <p>Great choice! You'll receive return instructions after delivery.</p>
+          <div className="return-benefits">
+            <span>🎁 +10 Impact Points per return</span>
+            <span>🚚 Free return shipping</span>
+            <span>🌍 Reduce environmental impact</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

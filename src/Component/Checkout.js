@@ -9,9 +9,9 @@ import cartService from "../services/cartService";
 
 function Checkout() {
   const { isAuthenticated, user } = useAuth();
-  const { cartItems, loading, loadCart } = useCart();
-  const [applyingDiscount, setApplyingDiscount] = useState(false);
+  const { cartItems, loading, loadCart } = useCart();  const [applyingDiscount, setApplyingDiscount] = useState(false);
   const [ecoDiscountApplied, setEcoDiscountApplied] = useState(false);
+  const [ecoReturnSelected, setEcoReturnSelected] = useState(false);
 
   // Show message if not authenticated
   if (!isAuthenticated) {
@@ -77,7 +77,7 @@ function Checkout() {
             <div className="empty-cart">
               <h3>Your cart is empty</h3>
               <p>Add some eco-friendly products to get started!</p>
-              <Link to="/green" className="shop-now-btn">
+              <Link to="/ecosphere" className="shop-now-btn">
                 🌱 Shop Eco Products
               </Link>
             </div>
@@ -128,29 +128,43 @@ function Checkout() {
                     onRemove={handleRemoveItem}
                   />
                 ))}
-              </div>
-
-              {/* Package Return Option */}
+              </div>              {/* Package Return Option */}
               <div className="return-package-section">
                 <h3>♻️ Eco Return Program</h3>
-                <p>
-                  Return your package after use and earn <strong>10 bonus impact points</strong>! 
-                  Help us reduce waste and support the circular economy.
-                </p>
-                <div className="return-info">
-                  <span>📦 Free return shipping</span>
-                  <span>🌱 +10 Impact Points</span>
-                  <span>🔄 Supporting circular economy</span>
+                <div className="return-description">
+                  <p>
+                    Return your package after use and earn <strong>10 bonus impact points</strong>! 
+                    Help us reduce waste and support the circular economy.
+                  </p>
+                  <div className="return-info">
+                    <span>📦 Free return shipping</span>
+                    <span>🌱 +10 Impact Points</span>
+                    <span>🔄 Supporting circular economy</span>
+                  </div>
                 </div>
+                <label className="return-checkbox">
+                  <span className="checkbox-label">I want to participate in the Eco Return Program</span>
+                  <input 
+                    type="checkbox" 
+                    checked={ecoReturnSelected}
+                    onChange={(e) => setEcoReturnSelected(e.target.checked)}
+                  />
+                </label>                {ecoReturnSelected && (
+                  <div className="return-selected-info">
+                    <div className="return-benefit">
+                      ✅ Great choice! You'll receive instructions for package return after delivery.
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
         </div>
       </div>
-        <div className="checkout__right">
-        <Subtotal 
+        <div className="checkout__right">        <Subtotal 
           cartItems={cartItems || []}
           ecoDiscountPercent={ecoDiscountApplied ? availableDiscount : 0}
+          ecoReturnSelected={ecoReturnSelected}
         />
       </div>
     </div>

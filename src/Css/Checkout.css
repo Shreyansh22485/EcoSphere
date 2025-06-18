@@ -98,13 +98,47 @@
   }
   .cart-items {
     margin: 20px 0;
-  }
-  .return-package-section {
+  }  .return-package-section {
     background: #f8f9fa;
     padding: 20px;
     border-radius: 8px;
     border-left: 4px solid #4CAF50;
     margin-top: 30px;
+  }
+
+  .return-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-weight: 600;
+    color: #333;
+    margin-top: 20px;
+    padding: 15px;
+    background: #f0f8f0;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+    transition: border-color 0.3s ease;
+  }
+
+  .return-checkbox:hover {
+    border-color: #4CAF50;
+  }
+
+  .return-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #4CAF50;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .checkbox-label {
+    font-size: 16px;
+    color: #333;
+  }
+  .return-description {
+    margin-top: 15px;
   }
   .return-package-section h3 {
     margin: 0 0 10px 0;
@@ -120,6 +154,19 @@
     font-size: 14px;
     color: #4CAF50;
     font-weight: 600;
+    flex-wrap: wrap;
+  }
+  .return-selected-info {
+    margin-top: 15px;
+    padding: 12px;
+    background: #e8f5e8;
+    border-radius: 6px;
+    border: 1px solid #4CAF50;
+  }
+  .return-benefit {
+    color: #2e7d32;
+    font-weight: 600;
+    font-size: 14px;
   }
   .ecofriendly {
     color: #62be3a;
