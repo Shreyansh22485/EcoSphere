@@ -260,12 +260,76 @@ class GroupService {
   }
 
   formatNumber(num) {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M';
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num?.toString() || '0';
+  }
+
+  // Group Buying Methods
+  async getGroupBuys(groupId, productId = null) {
+    let url = `${API_BASE_URL}/groups/${groupId}/group-buys`;
+    if (productId) {
+      url += `?productId=${productId}`;
     }
-    return num.toString();
+    
+    const response = await fetch(url, {
+      headers: getAuthHeaders()
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to fetch group buys');
+    }
+    
+    return data;
+  }
+
+  async startGroupBuy(groupId, groupBuyData) {
+    const response = await fetch(`${API_BASE_URL}/groups/${groupId}/group-buys`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(groupBuyData)
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to start group buy');
+    }
+    
+    return data;
+  }
+
+  async joinGroupBuy(groupId, groupBuyId, participantData) {
+    const response = await fetch(`${API_BASE_URL}/groups/${groupId}/group-buys/${groupBuyId}/join`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(participantData)
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to join group buy');
+    }
+    
+    return data;
+  }
+
+  async leaveGroupBuy(groupId, groupBuyId) {
+    const response = await fetch(`${API_BASE_URL}/groups/${groupId}/group-buys/${groupBuyId}/leave`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to leave group buy');
+    }
+    
+    return data;
   }
 }
 

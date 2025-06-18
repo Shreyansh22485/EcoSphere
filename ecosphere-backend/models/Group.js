@@ -245,10 +245,23 @@ const GroupSchema = new mongoose.Schema({
   },
   
   // Activity Log for group feed
-  activityLog: [{
-    type: {
+  activityLog: [{    type: {
       type: String,
-      enum: ['member_joined', 'member_left', 'member_removed', 'challenge_created', 'challenge_completed', 'purchase_made', 'goal_reached', 'badge_earned'],
+      enum: [
+        'member_joined', 
+        'member_left', 
+        'member_removed', 
+        'challenge_created', 
+        'challenge_completed', 
+        'purchase_made', 
+        'goal_reached', 
+        'badge_earned',
+        'group_buy_started',
+        'group_buy_joined',
+        'group_buy_left',
+        'group_buy_completed',
+        'group_buy_cancelled'
+      ],
       required: true
     },
     user: {

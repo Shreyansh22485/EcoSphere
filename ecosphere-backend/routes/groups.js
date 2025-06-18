@@ -15,7 +15,11 @@ const {
   getUserGroups,
   getGroupStats,
   updateGroupProgress,
-  createGroupChallenge
+  createGroupChallenge,
+  getGroupBuys,
+  startGroupBuy,
+  joinGroupBuy,
+  leaveGroupBuy
 } = require('../controllers/groupController');
 const { protect } = require('../middleware/auth');
 
@@ -71,22 +75,17 @@ router.put('/:id/challenges/:challengeId', (req, res) => {
 // Group progress tracking
 router.post('/:id/progress/purchase', updateGroupProgress);
 
-// Group buying (placeholder endpoints)
-router.post('/:id/group-buy', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Group buying endpoint - Coming Soon',
-    data: req.body
-  });
-});
+// Group buying
+router.post('/:id/group-buy', startGroupBuy);
+router.get('/:id/group-buy/active', getGroupBuys);
+router.post('/:id/group-buy/join', joinGroupBuy);
+router.post('/:id/group-buy/leave', leaveGroupBuy);
 
-router.get('/:id/group-buy/active', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Get active group buys endpoint - Coming Soon',
-    data: []
-  });
-});
+// Group Buying routes
+router.get('/:id/group-buys', getGroupBuys);
+router.post('/:id/group-buys', startGroupBuy);
+router.post('/:id/group-buys/:groupBuyId/join', joinGroupBuy);
+router.post('/:id/group-buys/:groupBuyId/leave', leaveGroupBuy);
 
 // Group achievements (placeholder endpoints)
 router.get('/:id/achievements', (req, res) => {

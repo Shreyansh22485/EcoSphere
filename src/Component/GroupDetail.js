@@ -9,11 +9,11 @@ import { useAuth } from '../hooks/useAuth';
 const GroupDetail = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [group, setGroup] = useState(null);
+  const { user } = useAuth();  const [group, setGroup] = useState(null);
   const [userMembership, setUserMembership] = useState(null);
   const [members, setMembers] = useState([]);
   const [stats, setStats] = useState(null);
+  const [groupBuys, setGroupBuys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
@@ -23,20 +23,21 @@ const GroupDetail = () => {
       fetchGroupDetails();
     }
   }, [groupId, user]);
-
   const fetchGroupDetails = async () => {
     try {
       setLoading(true);
-      const [groupResponse, membersResponse, statsResponse] = await Promise.all([
+      const [groupResponse, membersResponse, statsResponse, groupBuysResponse] = await Promise.all([
         groupService.getGroup(groupId),
         user ? groupService.getGroupMembers(groupId).catch(() => ({ data: [] })) : Promise.resolve({ data: [] }),
-        user ? groupService.getGroupStats(groupId).catch(() => ({ data: null })) : Promise.resolve({ data: null })
+        user ? groupService.getGroupStats(groupId).catch(() => ({ data: null })) : Promise.resolve({ data: null }),
+        user ? groupService.getGroupBuys(groupId).catch(() => ({ data: [] })) : Promise.resolve({ data: [] })
       ]);
 
       setGroup(groupResponse.data.group);
       setUserMembership(groupResponse.data.userMembership);
       setMembers(membersResponse.data);
       setStats(statsResponse.data);
+      setGroupBuys(groupBuysResponse.data);
       setError(null);
     } catch (err) {
       console.error('Failed to fetch group details:', err);
@@ -233,12 +234,17 @@ const GroupDetail = () => {
           onClick={() => setActiveTab('progress')}
         >
           <FaBullseye /> Progress
-        </button>
-        <button 
+        </button>        <button 
           className={`tab-btn ${activeTab === 'achievements' ? 'active' : ''}`}
           onClick={() => setActiveTab('achievements')}
         >
           <FaTrophy /> Achievements
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'groupbuys' ? 'active' : ''}`}
+          onClick={() => setActiveTab('groupbuys')}
+        >
+          <FaUserPlus /> Group Buys
         </button>
       </div>
 
@@ -407,9 +413,7 @@ const GroupDetail = () => {
               </div>
             </div>
           </div>
-        )}
-
-        {activeTab === 'achievements' && (
+        )}        {activeTab === 'achievements' && (
           <div className="achievements-tab">
             <div className="achievements-grid">
               <div className="achievement-card">
@@ -418,6 +422,187 @@ const GroupDetail = () => {
                 <p>Coming soon! Track your group's milestones and rewards.</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'groupbuys' && (
+          <div className="groupbuys-tab">
+            <div className="groupbuys-header">
+              <h3><FaUserPlus /> Active Group Buys</h3>
+              <p>Collaborative purchasing for better prices and impact</p>
+            </div>
+            
+            {groupBuys.length === 0 ? (
+              <div className="no-groupbuys">
+                <div className="empty-state">
+                  <FaUserPlus className="empty-icon" />
+                  <h4>No Active Group Buys</h4>
+                  <p>No group buying campaigns are currently active in this group.</p>
+                  <p>Start shopping and create group buys from product pages!</p>
+                </div>
+              </div>
+            ) : (              <div className="groupbuys-grid">
+                {groupBuys.map((groupBuy) => {
+                  const progressPercentage = groupBuy.targetQuantity > 0 
+                    ? Math.min((groupBuy.currentQuantity / groupBuy.targetQuantity) * 100, 100)
+                    : 0;
+                  
+                  const totalParticipants = groupBuy.participants?.length || 0;
+                  const totalItems = groupBuy.participants?.reduce((total, p) => total + (p.quantity || 0), 0) || 0;
+                  const daysLeft = groupBuy.deadline 
+                    ? Math.max(0, Math.ceil((new Date(groupBuy.deadline) - new Date()) / (1000 * 60 * 60 * 24)))
+                    : null;
+                  
+                  return (
+                    <div key={groupBuy._id} className="groupbuy-card">
+                      {/* Product Header with Image */}
+                      <div className="groupbuy-product-header">
+                        {groupBuy.product?.images?.[0] && (
+                          <div className="product-image">
+                            <img 
+                              src={groupBuy.product.images[0].url} 
+                              alt={groupBuy.product.name}
+                              onClick={() => navigate(`/product/${groupBuy.product._id}`)}
+                            />
+                          </div>
+                        )}
+                        <div className="product-info">
+                          <h4 
+                            className="product-name clickable"
+                            onClick={() => navigate(`/product/${groupBuy.product._id}`)}
+                          >
+                            {groupBuy.product?.name || 'Product'}
+                          </h4>
+                          <span className={`status ${groupBuy.status}`}>
+                            {groupBuy.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Progress Section */}
+                      <div className="groupbuy-progress">
+                        <div className="progress-header">
+                          <h5>📦 Group Buy Progress</h5>
+                          <span className="progress-text">
+                            {groupBuy.currentQuantity || 0} / {groupBuy.targetQuantity || 0} items
+                          </span>
+                        </div>
+                        
+                        <div className="progress-bar-container">
+                          <div className="progress-bar">
+                            <div 
+                              className="progress-fill" 
+                              style={{ width: `${progressPercentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="progress-percentage">{Math.round(progressPercentage)}%</span>
+                        </div>
+
+                        <div className="progress-stats">
+                          <div className="stat">
+                            <span className="stat-icon">👥</span>
+                            <span>{totalParticipants} participants</span>
+                          </div>
+                          <div className="stat">
+                            <span className="stat-icon">📋</span>
+                            <span>{totalItems} total items</span>
+                          </div>
+                          {daysLeft !== null && (
+                            <div className="stat">
+                              <span className="stat-icon">⏰</span>
+                              <span className={daysLeft <= 3 ? 'urgent' : ''}>
+                                {daysLeft > 0 ? `${daysLeft} days left` : 'Expired'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Pricing Information */}
+                      <div className="pricing-section">
+                        <div className="current-price">
+                          <span className="price-label">Group Price:</span>
+                          <span className="price-value">
+                            ${((groupBuy.product?.price || 0) * (1 - (groupBuy.discountPercent || 0) / 100)).toFixed(2)}
+                          </span>
+                        </div>
+                        {groupBuy.discountPercent > 0 && (
+                          <div className="discount-info">
+                            <span className="original-price">
+                              Original: ${(groupBuy.product?.price || 0).toFixed(2)}
+                            </span>
+                            <span className="discount-badge">
+                              {groupBuy.discountPercent}% OFF
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Participants Section */}
+                      <div className="participants-section">
+                        <h5>👥 Participants ({totalParticipants})</h5>
+                        <div className="participants-list">
+                          {groupBuy.participants?.slice(0, 6).map((participant, index) => (
+                            <div key={index} className="participant">
+                              <div className="participant-info">
+                                <span className="participant-name">
+                                  {participant.user?.name || 'Member'}
+                                </span>
+                                <span className="participant-quantity">
+                                  Qty: {participant.quantity || 0}
+                                </span>
+                              </div>
+                              <span className="join-date">
+                                {participant.joinedAt 
+                                  ? new Date(participant.joinedAt).toLocaleDateString()
+                                  : 'Recently'
+                                }
+                              </span>
+                            </div>
+                          ))}
+                          {totalParticipants > 6 && (
+                            <div className="more-participants">
+                              +{totalParticipants - 6} more participants
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="groupbuy-actions">
+                        <button 
+                          className="btn-view-product"
+                          onClick={() => navigate(`/product/${groupBuy.product._id}`)}
+                        >
+                          🔍 View Product
+                        </button>
+                        {groupBuy.status === 'active' && (
+                          <button className="btn-join-groupbuy">
+                            🛒 Join Group Buy
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Timeline */}
+                      <div className="groupbuy-timeline">
+                        <div className="timeline-item">
+                          <span className="timeline-label">Started:</span>
+                          <span>{new Date(groupBuy.startDate || groupBuy.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        {groupBuy.deadline && (
+                          <div className="timeline-item">
+                            <span className="timeline-label">Deadline:</span>
+                            <span className={daysLeft <= 3 ? 'urgent' : ''}>
+                              {new Date(groupBuy.deadline).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>

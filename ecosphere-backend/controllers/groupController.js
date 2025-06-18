@@ -1058,6 +1058,340 @@ async function _completeGroupChallenge(group, challenge) {
   return group;
 }
 
+// Group Buying Methods
+
+/**
+ * @desc    Get group buys for a group
+ * @route   GET /api/groups/:id/group-buys
+ * @access  Private (Members only)
+ */
+const getGroupBuys = asyncHandler(async (req, res) => {
+  const { productId } = req.query;
+  
+  const group = await Group.findById(req.params.id)
+    .populate('groupBuying.activeOrders.product', 'name price images')
+    .populate('groupBuying.activeOrders.participants.user', 'name');
+  
+  if (!group) {
+    return res.status(404).json({
+      success: false,
+      message: 'Group not found'
+    });
+  }
+  
+  // Check if user is a member
+  const isMember = group.members.some(member => 
+    member.user.toString() === req.user.id.toString()
+  );
+  
+  if (!isMember) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Members only.'
+    });
+  }
+  
+  let groupBuys = group.groupBuying.activeOrders;
+  
+  // Filter by product if specified
+  if (productId) {
+    groupBuys = groupBuys.filter(order => 
+      order.product._id.toString() === productId
+    );
+  }
+  
+  res.status(200).json({
+    success: true,
+    data: groupBuys
+  });
+});
+
+/**
+ * @desc    Start a new group buy
+ * @route   POST /api/groups/:id/group-buys
+ * @access  Private (Leader/Moderator only)
+ */
+const startGroupBuy = asyncHandler(async (req, res) => {
+  const { productId, targetQuantity, deadline, discountPercent } = req.body;
+  
+  const group = await Group.findById(req.params.id);
+  
+  if (!group) {
+    return res.status(404).json({
+      success: false,
+      message: 'Group not found'
+    });
+  }
+  
+  // Check if group buying is enabled
+  if (!group.settings.groupBuyingEnabled) {
+    return res.status(400).json({
+      success: false,
+      message: 'Group buying is not enabled for this group'
+    });
+  }
+  
+  // Check if user is leader or moderator
+  const userMembership = group.members.find(member => 
+    member.user.toString() === req.user.id.toString()
+  );
+  
+  if (!userMembership || !['leader', 'moderator'].includes(userMembership.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to start group buys'
+    });
+  }
+  
+  // Check if there's already an active group buy for this product
+  const existingGroupBuy = group.groupBuying.activeOrders.find(order => 
+    order.product.toString() === productId && order.status === 'active'
+  );
+  
+  if (existingGroupBuy) {
+    return res.status(400).json({
+      success: false,
+      message: 'There is already an active group buy for this product'
+    });
+  }
+  
+  // Create new group buy
+  const newGroupBuy = {
+    product: productId,
+    targetQuantity: targetQuantity || 10,
+    currentQuantity: 0,
+    participants: [],
+    deadline: deadline ? new Date(deadline) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days default
+    discountPercent: discountPercent || 10,
+    status: 'active'
+  };
+  
+  group.groupBuying.activeOrders.push(newGroupBuy);
+  
+  // Add activity log
+  group.activityLog.push({
+    type: 'group_buy_started',
+    user: req.user.id,
+    description: `Started a group buy with ${targetQuantity} target quantity`,
+    metadata: {
+      productId,
+      targetQuantity,
+      discountPercent
+    },
+    timestamp: new Date()
+  });
+  
+  await group.save();
+  
+  // Populate the new group buy before returning
+  await group.populate('groupBuying.activeOrders.product', 'name price images');
+  
+  const createdGroupBuy = group.groupBuying.activeOrders[group.groupBuying.activeOrders.length - 1];
+  
+  res.status(201).json({
+    success: true,
+    data: createdGroupBuy,
+    message: 'Group buy started successfully'
+  });
+});
+
+/**
+ * @desc    Join a group buy
+ * @route   POST /api/groups/:id/group-buys/:groupBuyId/join
+ * @access  Private (Members only)
+ */
+const joinGroupBuy = asyncHandler(async (req, res) => {
+  const { quantity } = req.body;
+  const { id: groupId, groupBuyId } = req.params;
+  
+  const group = await Group.findById(groupId);
+  
+  if (!group) {
+    return res.status(404).json({
+      success: false,
+      message: 'Group not found'
+    });
+  }
+  
+  // Check if user is a member
+  const isMember = group.members.some(member => 
+    member.user.toString() === req.user.id.toString()
+  );
+  
+  if (!isMember) {
+    return res.status(403).json({
+      success: false,
+      message: 'You must be a group member to join group buys'
+    });
+  }
+  
+  // Find the group buy
+  const groupBuy = group.groupBuying.activeOrders.find(order => 
+    order._id.toString() === groupBuyId
+  );
+  
+  if (!groupBuy) {
+    return res.status(404).json({
+      success: false,
+      message: 'Group buy not found'
+    });
+  }
+  
+  // Check if group buy is still active
+  if (groupBuy.status !== 'active') {
+    return res.status(400).json({
+      success: false,
+      message: 'Group buy is no longer active'
+    });
+  }
+  
+  // Check if deadline has passed
+  if (new Date() > groupBuy.deadline) {
+    return res.status(400).json({
+      success: false,
+      message: 'Group buy deadline has passed'
+    });
+  }
+  
+  // Check if user is already participating
+  const existingParticipant = groupBuy.participants.find(participant => 
+    participant.user.toString() === req.user.id.toString()
+  );
+  
+  if (existingParticipant) {
+    return res.status(400).json({
+      success: false,
+      message: 'You are already participating in this group buy'
+    });
+  }
+  
+  // Add participant
+  groupBuy.participants.push({
+    user: req.user.id,
+    quantity: quantity || 1,
+    joinedAt: new Date()
+  });
+  
+  // Update current quantity
+  groupBuy.currentQuantity += quantity || 1;
+  
+  // Check if target reached
+  if (groupBuy.currentQuantity >= groupBuy.targetQuantity) {
+    groupBuy.status = 'completed';
+    
+    // Add activity log for completion
+    group.activityLog.push({
+      type: 'group_buy_completed',
+      user: req.user.id,
+      description: `Group buy completed! Target of ${groupBuy.targetQuantity} reached`,
+      metadata: {
+        productId: groupBuy.product,
+        finalQuantity: groupBuy.currentQuantity,
+        participantCount: groupBuy.participants.length
+      },
+      timestamp: new Date()
+    });
+    
+    // Update completed orders count
+    group.groupBuying.completedOrders += 1;
+  } else {
+    // Add activity log for participation
+    group.activityLog.push({
+      type: 'group_buy_joined',
+      user: req.user.id,
+      description: `Joined group buy (${groupBuy.currentQuantity}/${groupBuy.targetQuantity})`,
+      metadata: {
+        productId: groupBuy.product,
+        quantity: quantity || 1
+      },
+      timestamp: new Date()
+    });
+  }
+  
+  await group.save();
+  
+  res.status(200).json({
+    success: true,
+    data: groupBuy,
+    message: 'Successfully joined group buy'
+  });
+});
+
+/**
+ * @desc    Leave a group buy
+ * @route   POST /api/groups/:id/group-buys/:groupBuyId/leave
+ * @access  Private (Participants only)
+ */
+const leaveGroupBuy = asyncHandler(async (req, res) => {
+  const { id: groupId, groupBuyId } = req.params;
+  
+  const group = await Group.findById(groupId);
+  
+  if (!group) {
+    return res.status(404).json({
+      success: false,
+      message: 'Group not found'
+    });
+  }
+  
+  // Find the group buy
+  const groupBuy = group.groupBuying.activeOrders.find(order => 
+    order._id.toString() === groupBuyId
+  );
+  
+  if (!groupBuy) {
+    return res.status(404).json({
+      success: false,
+      message: 'Group buy not found'
+    });
+  }
+  
+  // Check if group buy is still active
+  if (groupBuy.status !== 'active') {
+    return res.status(400).json({
+      success: false,
+      message: 'Cannot leave a completed or cancelled group buy'
+    });
+  }
+  
+  // Find participant
+  const participantIndex = groupBuy.participants.findIndex(participant => 
+    participant.user.toString() === req.user.id.toString()
+  );
+  
+  if (participantIndex === -1) {
+    return res.status(400).json({
+      success: false,
+      message: 'You are not participating in this group buy'
+    });
+  }
+  
+  const participant = groupBuy.participants[participantIndex];
+  
+  // Remove participant and update quantity
+  groupBuy.currentQuantity -= participant.quantity;
+  groupBuy.participants.splice(participantIndex, 1);
+  
+  // Add activity log
+  group.activityLog.push({
+    type: 'group_buy_left',
+    user: req.user.id,
+    description: `Left group buy (${groupBuy.currentQuantity}/${groupBuy.targetQuantity})`,
+    metadata: {
+      productId: groupBuy.product,
+      quantity: participant.quantity
+    },
+    timestamp: new Date()
+  });
+  
+  await group.save();
+  
+  res.status(200).json({
+    success: true,
+    message: 'Successfully left group buy'
+  });
+});
+
 module.exports = {
   getGroups,
   getGroup,
@@ -1073,5 +1407,9 @@ module.exports = {
   getUserGroups,
   getGroupStats,
   updateGroupProgress,
-  createGroupChallenge
+  createGroupChallenge,
+  getGroupBuys,
+  startGroupBuy,
+  joinGroupBuy,
+  leaveGroupBuy
 };

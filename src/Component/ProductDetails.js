@@ -7,16 +7,17 @@ import { useStateValue } from "../StateProvider";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useCart } from "../hooks/useCart";
+import GroupBuyModal from "./GroupBuyModal";
 
 function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
   const { addToCart, loading: cartLoading } = useCart();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState(null);  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
+  const [showGroupBuyModal, setShowGroupBuyModal] = useState(false);
   const [{ basket }, dispatch] = useStateValue();
 
   useEffect(() => {
@@ -83,6 +84,13 @@ function ProductDetails() {
       console.error('Error adding to cart:', error);
       alert('❌ Failed to add product to cart. Please try again.');
     }
+  };
+
+  const handleGroupBuyJoin = (groupBuyData) => {
+    // Add the product to cart with group buy information
+    console.log('Joined group buy:', groupBuyData);
+    // You can add logic here to add the product to cart with group buy pricing
+    alert('🎉 Successfully joined group buy! Check your groups for updates.');
   };
 
   const handleImageClick = (image) => {
@@ -290,22 +298,37 @@ function ProductDetails() {
         >
           {cartLoading ? "Adding to Cart..." : 
            !isAuthenticated ? "Sign In to Buy with IMPACT" :
-           `Buy with IMPACT (+${impactPoints} Impact Points)`}
-        </button>
+           `Buy with IMPACT (+${impactPoints} Impact Points)`}        </button>
         
         {product.groupBuying?.enabled && (
-          <div style={{
-            backgroundColor: "#f3e5f5",
-            padding: "15px",
-            borderRadius: "8px",
-            marginTop: "10px",
-            fontSize: "14px",
-            color: "#6a1b9a",
-            textAlign: "center"
-          }}>
+          <button 
+            className="productDetails__groupBuyButton"
+            onClick={() => setShowGroupBuyModal(true)}
+            style={{
+              backgroundColor: "#6a1b9a",
+              color: "white",
+              border: "none",
+              padding: "15px",
+              borderRadius: "8px",
+              marginTop: "10px",
+              fontSize: "14px",
+              width: "100%",
+              cursor: "pointer",
+              transition: "background-color 0.3s"
+            }}
+            onMouseOver={(e) => e.target.style.backgroundColor = "#4a148c"}
+            onMouseOut={(e) => e.target.style.backgroundColor = "#6a1b9a"}
+          >
             🎯 Join Group Buy for 2x Impact Points & Better Pricing! (Min: {product.groupBuying.minQuantity} items)
-          </div>
+          </button>
         )}
+        
+        <GroupBuyModal 
+          product={product}
+          isOpen={showGroupBuyModal}
+          onClose={() => setShowGroupBuyModal(false)}
+          onJoinGroupBuy={handleGroupBuyJoin}
+        />
       </div>
     </div>
   );
