@@ -2,12 +2,17 @@ import React, { useState, useEffect } from "react";
 import "../Css/Header.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useStateValue } from "../StateProvider";
+import { useCart } from "../hooks/useCart";
 
 function Header() {
   const [{ basket }, dispatch] = useStateValue();
+  const { cartItems } = useCart();
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null);
   const navigate = useNavigate();
+
+  // Calculate total cart item count from backend data
+  const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     // Check for authentication data in localStorage
@@ -106,9 +111,8 @@ function Header() {
               src="../images/cart_icon.png"
               className="header__cartIcon"
               alt="cart"
-            />
-            <span className="header__optionLineTwo header__basketCount">
-              {basket?.length}
+            />            <span className="header__optionLineTwo header__basketCount">
+              {cartItemCount}
             </span>
           </div>
         </Link>
