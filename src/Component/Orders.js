@@ -73,6 +73,14 @@ function Orders() {
     };
     return statusClasses[status] || 'status-default';
   };
+  const getEcoTierInfo = (ecoScore) => {
+    if (ecoScore >= 900) return { tier: 'EcoChampion', emoji: '🌟' };
+    if (ecoScore >= 750) return { tier: 'EcoPioneer', emoji: '🌿' };
+    if (ecoScore >= 600) return { tier: 'EcoSelect', emoji: '🌱' };
+    if (ecoScore >= 450) return { tier: 'EcoAware', emoji: '♻️' };
+    if (ecoScore >= 300) return { tier: 'EcoEntry', emoji: '🌍' };
+    return { tier: 'Standard', emoji: '⚠️' };
+  };
 
   const calculateTotalImpact = () => {
     return orders.reduce((total, order) => ({
@@ -195,12 +203,16 @@ function Orders() {
                             alt={item.product?.name || 'Product'}
                             className="item-image"
                           />
-                          <div className="item-info">
-                            <p className="item-name">{item.product?.name || 'Product'}</p>
+                          <div className="item-info">                            <p className="item-name">{item.product?.name || 'Product'}</p>
                             <p className="item-details">Qty: {item.quantity} • ${item.price}</p>
                             {item.ecoScore && (
-                              <div className="item-eco-score">
-                                🌱 EcoScore: {item.ecoScore}/1000
+                              <div className="item-eco-info">
+                                <div className="item-eco-score">
+                                   EcoScore: {item.ecoScore}/1000
+                                </div>
+                                <div className="item-eco-tier">
+                                  {getEcoTierInfo(item.ecoScore).emoji} {getEcoTierInfo(item.ecoScore).tier}
+                                </div>
                               </div>
                             )}
                           </div>
