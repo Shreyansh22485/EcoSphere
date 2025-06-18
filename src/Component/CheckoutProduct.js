@@ -52,13 +52,12 @@ function CheckoutProduct({
       setLoading(false);
     }
   };
-
   const getEcoTier = (score) => {
-    if (score >= 90) return { tier: 'EcoChampion', color: '#006400' };
-    if (score >= 75) return { tier: 'EcoPioneer', color: '#228B22' };
-    if (score >= 60) return { tier: 'EcoSelect', color: '#32CD32' };
-    if (score >= 45) return { tier: 'EcoAware', color: '#FFD700' };
-    if (score >= 30) return { tier: 'EcoEntry', color: '#FF8C00' };
+    if (score >= 900) return { tier: 'EcoChampion', color: '#006400' };
+    if (score >= 750) return { tier: 'EcoPioneer', color: '#228B22' };
+    if (score >= 600) return { tier: 'EcoSelect', color: '#32CD32' };
+    if (score >= 450) return { tier: 'EcoAware', color: '#FFD700' };
+    if (score >= 300) return { tier: 'EcoEntry', color: '#FF8C00' };
     return { tier: 'Standard', color: '#666' };
   };
 
@@ -67,7 +66,7 @@ function CheckoutProduct({
 
   return (
     <div className="checkoutProduct">
-      <img src={image} alt={title} className="checkoutProduct__image" />
+      <img src={image.url} alt={title} className="checkoutProduct__image" />
       
       <div className="checkoutProduct__info">
         <p className="checkoutProduct__title">{title}</p>

@@ -21,9 +21,9 @@ const Subtotal = ({ cartItems = [], ecoDiscountPercent = 0 }) => {
       
       return {
         totalImpactPoints: acc.totalImpactPoints + ((impact.impactPoints || 0) * quantity),
-        totalCarbonSaved: acc.totalCarbonSaved + ((impact.carbonFootprintReduction || 0) * quantity),
+        totalCarbonSaved: acc.totalCarbonSaved + ((impact.carbonSaved || 0) * quantity),
         totalWaterSaved: acc.totalWaterSaved + ((impact.waterSaved || 0) * quantity),
-        totalWastePrevented: acc.totalWastePrevented + ((impact.wasteReduced || 0) * quantity)
+        totalWastePrevented: acc.totalWastePrevented + ((impact.wastePrevented || 0) * quantity)
       };
     }, {
       totalImpactPoints: 0,
