@@ -1,16 +1,83 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../Css/Educationsection.css";
 import { Link } from "react-router-dom";
+import { generateQuizQuestions, testGeminiConnection } from "../services/quizService";
 
 function Educationsection() {
   const [activeIndex, setActiveIndex] = useState(null);
   const [activeQuiz, setActiveQuiz] = useState(null);
   const [quizScore, setQuizScore] = useState(0);
+  const [quickQuizzes, setQuickQuizzes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiStatus, setApiStatus] = useState(null);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
 
   // Refs for smooth scrolling
   const coursesRef = useRef(null);
   const docsRef = useRef(null);
   const quizRef = useRef(null);
+
+  useEffect(() => {
+    const initializeQuiz = async () => {
+      try {
+        // First test the API connection
+        const testResult = await testGeminiConnection();
+        setApiStatus(testResult);
+        
+        if (testResult.success) {
+          // If API test is successful, fetch quiz questions
+          setIsLoading(true);
+          const questions = await generateQuizQuestions();
+          setQuickQuizzes(questions);
+        } else {
+          console.error('API Test Failed:', testResult.message);
+          // Use fallback questions if API test fails
+          setQuickQuizzes([
+            {
+              question: "What is the primary goal of EcoSphere?",
+              options: [
+                "To increase Amazon's profits",
+                "To promote eco-friendly shopping and reduce environmental impact",
+                "To compete with other e-commerce platforms",
+                "To reduce shipping costs"
+              ],
+              correctAnswer: 1
+            },
+            {
+              question: "Which of these is NOT a criterion for eco-friendly certification?",
+              options: [
+                "Carbon emissions",
+                "Material sourcing",
+                "Product popularity",
+                "Recyclability"
+              ],
+              correctAnswer: 2
+            },
+            {
+              question: "What is the purpose of the box return system?",
+              options: [
+                "To reduce shipping costs",
+                "To promote zero waste and recycling",
+                "To speed up delivery",
+                "To increase customer satisfaction"
+              ],
+              correctAnswer: 1
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error("Error initializing quiz:", error);
+        setApiStatus({
+          success: false,
+          message: error.message
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeQuiz();
+  }, []);
 
   const scrollToSection = (ref) => {
     ref.current.scrollIntoView({ behavior: 'smooth' });
@@ -80,39 +147,6 @@ function Educationsection() {
     }
   ];
 
-  const quickQuizzes = [
-    {
-      question: "What is the primary goal of EcoSphere?",
-      options: [
-        "To increase Amazon's profits",
-        "To promote eco-friendly shopping and reduce environmental impact",
-        "To compete with other e-commerce platforms",
-        "To reduce shipping costs"
-      ],
-      correctAnswer: 1
-    },
-    {
-      question: "Which of these is NOT a criterion for eco-friendly certification?",
-      options: [
-        "Carbon emissions",
-        "Material sourcing",
-        "Product popularity",
-        "Recyclability"
-      ],
-      correctAnswer: 2
-    },
-    {
-      question: "What is the purpose of the box return system?",
-      options: [
-        "To reduce shipping costs",
-        "To promote zero waste and recycling",
-        "To speed up delivery",
-        "To increase customer satisfaction"
-      ],
-      correctAnswer: 1
-    }
-  ];
-
   const handleItemClick = (index) => {
     if (index === activeIndex) {
       // Clicking the active item again will close it
@@ -128,10 +162,15 @@ function Educationsection() {
   };
 
   const handleQuizSubmit = (quizIndex, selectedAnswer) => {
-    if (selectedAnswer === quickQuizzes[quizIndex].correctAnswer) {
+    const isCorrect = selectedAnswer === quickQuizzes[quizIndex].correctAnswer;
+    if (isCorrect) {
       setQuizScore(prev => prev + 1);
     }
     setActiveQuiz(quizIndex);
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [quizIndex]: selectedAnswer
+    }));
   };
 
   const courses = [
@@ -253,54 +292,52 @@ function Educationsection() {
         <div className="section-header">
           <h2>Test Your Knowledge</h2>
           <p>Take our quick quiz to assess your understanding of eco-friendly practices</p>
+          {apiStatus && !apiStatus.success && (
+            <div className="api-error-message">
+              <p>Note: Using fallback questions due to API connection issue: {apiStatus.message}</p>
+            </div>
+          )}
         </div>
         
         <div className="quiz-container">
-          {quickQuizzes.map((quiz, index) => (
-            <div key={index} className="quiz-card">
-              <div className="quiz-header">
-                <h3>Question {index + 1}</h3>
-                {activeQuiz === index && (
-                  <span className="quiz-feedback">
-                    {quizScore > 0 ? "✓ Correct!" : "✗ Try again"}
-                  </span>
-                )}
-              </div>
-              <p className="quiz-question">{quiz.question}</p>
-              <div className="quiz-options">
-                {quiz.options.map((option, optionIndex) => (
-                  <button
-                    key={optionIndex}
-                    className={`quiz-option ${
-                      activeQuiz === index && optionIndex === quiz.correctAnswer
-                        ? 'correct'
-                        : activeQuiz === index && optionIndex === activeQuiz
-                        ? 'incorrect'
-                        : ''
-                    }`}
-                    onClick={() => handleQuizSubmit(index, optionIndex)}
-                    disabled={activeQuiz === index}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
+          {isLoading ? (
+            <div className="quiz-loading">
+              <div className="loading-spinner"></div>
+              <p>Generating quiz questions...</p>
             </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="progress-section">
-        <h2>Your Learning Progress</h2>
-        <div className="progress-stats">
-          <div className="stat-card">
-            <span className="stat-number">{quizScore}</span>
-            <span className="stat-label">Quiz Score</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-number">{quickQuizzes.length}</span>
-            <span className="stat-label">Total Questions</span>
-          </div>
+          ) : (
+            quickQuizzes.map((quiz, index) => (
+              <div key={index} className="quiz-card">
+                <div className="quiz-header">
+                  <h3>Question {index + 1}</h3>
+                  {activeQuiz === index && (
+                    <span className={`quiz-feedback ${selectedAnswers[index] === quiz.correctAnswer ? 'correct' : 'incorrect'}`}>
+                      {selectedAnswers[index] === quiz.correctAnswer ? "✓ Correct!" : "✗ Incorrect"}
+                    </span>
+                  )}
+                </div>
+                <p className="quiz-question">{quiz.question}</p>
+                <div className="quiz-options">
+                  {quiz.options.map((option, optionIndex) => (
+                    <button
+                      key={optionIndex}
+                      className={`quiz-option ${
+                        activeQuiz === index && optionIndex === quiz.correctAnswer
+                          ? 'correct'
+                          : activeQuiz === index && optionIndex === selectedAnswers[index]
+                          ? 'incorrect'
+                          : ''
+                      }`}
+                      onClick={() => handleQuizSubmit(index, optionIndex)}
+                      disabled={activeQuiz === index}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
