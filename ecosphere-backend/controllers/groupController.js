@@ -8,7 +8,7 @@ const { asyncHandler } = require('../middleware/error');
  * @access  Public
  */
 const getGroups = asyncHandler(async (req, res) => {
-  const { category, search, isPublic = true, page = 1, limit = 12 } = req.query;
+  const { category, search, isPublic = 'true', page = 1, limit = 12 } = req.query;
   
   // Build query
   let query = {};
@@ -24,10 +24,15 @@ const getGroups = asyncHandler(async (req, res) => {
     ];
   }
   
+
+  
   if (isPublic !== 'all') {
-    query['settings.isPublic'] = isPublic === 'true';
+    const isPublicBool = isPublic === 'true';
+    query['settings.isPublic'] = isPublicBool;
+    console.log('Setting isPublic filter to:', isPublicBool);
   }
     // Execute query with pagination
+ 
   const groups = await Group.find(query)
     .populate('leader', 'name')
     .populate('members.user', 'name')
