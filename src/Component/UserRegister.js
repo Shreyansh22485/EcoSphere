@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStateValue } from '../StateProvider';
+import { useAuth } from '../hooks/useAuth';
 import '../Css/Auth.css';
 
 function UserRegister() {
   const navigate = useNavigate();
-  const [, dispatch] = useStateValue();
+  const { signup } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -45,37 +45,19 @@ function UserRegister() {
       setLoading(false);
       return;
     }    try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        }),
-      });
+      const success = await signup({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      }, 'customer');
 
-      const data = await response.json();      if (data.success) {
-        // Store user data and token
-        localStorage.setItem('ecoSphereToken', data.data.token);
-        localStorage.setItem('ecoSphereUserType', 'user');
-        localStorage.setItem('ecoSphereUser', JSON.stringify(data.data.user));
-        
-        dispatch({
-          type: 'SET_USER',
-          user: data.data.user,
-          userType: 'user'
-        });        alert('Registration successful! Welcome to EcoSphere!');
-        // Refresh the page to update header state
-        window.location.href = '/';
-      } else {
-        setError(data.message || 'Registration failed');
+      if (success) {
+        alert('Registration successful! Welcome to EcoSphere!');
+        navigate('/');
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setError('Network error. Please try again.');
+      setError(error.message || 'Registration failed');
     }
 
     setLoading(false);

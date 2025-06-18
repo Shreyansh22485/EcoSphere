@@ -9,9 +9,10 @@ const AmazonNavigationBarg = () => {
       <div className="amazon-nav-section">        <ul className="amazon-nav-list">
           <Link style={{textDecoration: 'none'}} to = "/ecosphere">
             <li><a href="#" style={{ color: '#146eb4' }}>EcoSphere</a></li>
+          </Link>          <li><a href="#">EcoSphere Select</a></li>
+          <Link style={{textDecoration: 'none'}} to="/groups">
+            <li><a href="#" style={{ color: '#146eb4' }}>EcoSphere Groups</a></li>
           </Link>
-          <li><a href="#">EcoSphere Select</a></li>
-          <li><a href="#">EcoSphere Groups</a></li>
           <li><a href="#">EcoSphere Rewards</a></li>
           <li><a href="#">Categories</a></li>
           <li><a href="#">Top Rated</a></li>

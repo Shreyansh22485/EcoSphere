@@ -9,14 +9,15 @@ const { asyncHandler } = require('../middleware/error');
  */
 const getCart = asyncHandler(async (req, res) => {
   let cart = await Cart.findOne({ user: req.user._id })
-    .populate({
-      path: 'items.product',
-      select: 'name price images ecoScore impactPerPurchase status',
-      populate: {
-        path: 'partner',
-        select: 'companyName'
-      }
-    });
+  .populate({
+    path: 'items.product',
+    select: 'name price images ecoScore impactPerPurchase status',
+    populate: {
+      path: 'partner',
+      select: 'companyName'
+    }
+  });
+
 
   // Create empty cart if doesn't exist
   if (!cart) {
@@ -92,7 +93,7 @@ const addToCart = asyncHandler(async (req, res) => {
       select: 'companyName'
     }
   });
-
+  console.log(' cart user._id:', req.user._id);
   res.status(200).json({
     success: true,
     message: 'Product added to cart successfully',

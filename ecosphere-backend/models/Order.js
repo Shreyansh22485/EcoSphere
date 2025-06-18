@@ -47,13 +47,16 @@ const OrderSchema = new mongoose.Schema({
       waterSaved: { type: Number, default: 0 },
       wastePrevented: { type: Number, default: 0 },
       impactPoints: { type: Number, default: 0 }
-    },
-    // Group buying information
+    },    // Group buying information
     groupBuying: {
       isGroupBuy: { type: Boolean, default: false },
-      groupId: String,
+      groupId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group'
+      },
       discount: { type: Number, default: 0 }, // Percentage
-      originalPrice: Number
+      originalPrice: Number,
+      groupContributionPoints: { type: Number, default: 0 } // Points earned for group
     }
   }],
     // Order totals
@@ -214,17 +217,26 @@ const OrderSchema = new mongoose.Schema({
       }
     }
   },
-  
-  // Group buying details
+    // Group buying details
   groupBuying: {
     hasGroupItems: { type: Boolean, default: false },
     totalGroupDiscount: { type: Number, default: 0 },
     groupOrders: [{
-      groupId: String,
+      groupId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group'
+      },
       productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
       participantCount: Number,
-      discountApplied: Number
-    }]
+      discountApplied: Number,
+      groupPointsEarned: { type: Number, default: 0 }
+    }],
+    // Overall group context for this order
+    primaryGroup: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Group'
+    },
+    groupPointsEarned: { type: Number, default: 0 } // Total points earned for group memberships
   },
   
   // Customer feedback and reviews

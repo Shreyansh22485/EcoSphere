@@ -205,8 +205,7 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  
-  // Achievement tracking
+    // Achievement tracking
   achievements: {
     firstPurchase: { type: Date },
     firstEcoProduct: { type: Date },
@@ -214,6 +213,62 @@ const UserSchema = new mongoose.Schema({
     referralCount: { type: Number, default: 0 },
     streakDays: { type: Number, default: 0 },
     lastActivityDate: { type: Date, default: Date.now }
+  },
+  
+  // EcoSphere Groups - User group memberships and stats
+  groups: {
+    memberships: [{
+      group: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group',
+        required: true
+      },
+      joinedAt: {
+        type: Date,
+        default: Date.now
+      },
+      role: {
+        type: String,
+        enum: ['leader', 'moderator', 'member'],
+        default: 'member'
+      },
+      contributionPoints: {
+        type: Number,
+        default: 0
+      },
+      isActive: {
+        type: Boolean,
+        default: true
+      }
+    }],
+    totalGroupPoints: {
+      type: Number,
+      default: 0
+    },
+    groupsLeading: {
+      type: Number,
+      default: 0
+    },
+    groupAchievements: [{
+      groupId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group'
+      },
+      achievementType: {
+        type: String,
+        enum: ['challenge_completed', 'top_contributor', 'group_milestone', 'leadership_award']
+      },
+      title: String,
+      description: String,
+      pointsEarned: {
+        type: Number,
+        default: 0
+      },
+      earnedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }]
   }
 }, {
   timestamps: true,

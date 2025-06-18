@@ -3,50 +3,33 @@ import "../Css/Headergreen.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useStateValue } from "../StateProvider";
 import { useCart } from "../hooks/useCart";
+import { useAuth } from "../hooks/useAuth";
 
 function Header() {
   const [{ basket }, dispatch] = useStateValue();
   const { cartItems } = useCart();
-  const [user, setUser] = useState(null);
-  const [userType, setUserType] = useState(null);
+  const { user, userType, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
   // Calculate total cart item count from backend data
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  useEffect(() => {
-    // Check for authentication data in localStorage
-    const token = localStorage.getItem('ecoSphereToken');
-    const storedUserType = localStorage.getItem('ecoSphereUserType');
-    
-    if (token && storedUserType) {
-      setUserType(storedUserType);
-      
-      if (storedUserType === 'user') {
-        const userData = JSON.parse(localStorage.getItem('ecoSphereUser') || '{}');
-        setUser(userData);
-      } else if (storedUserType === 'partner') {
-        const partnerData = JSON.parse(localStorage.getItem('ecoSpherePartner') || '{}');
-        setUser(partnerData);
-      }
-    }
-  }, []);
-
   const handleSignOut = () => {
-    // Clear all authentication data
-    localStorage.removeItem('ecoSphereToken');
-    localStorage.removeItem('ecoSphereUserType');
-    localStorage.removeItem('ecoSphereUser');
-    localStorage.removeItem('ecoSpherePartner');
+    // Use the logout function from useAuth hook
+    logout();
     
-    // Reset state
-    setUser(null);
-    setUserType(null);
+    // Clear any other state if needed
+    dispatch({
+      type: 'EMPTY_BASKET'
+    });
     
     // Navigate to home page
     navigate('/');
     
     alert('You have been signed out successfully! 👋');
+    
+    // Force a page reload to ensure everything is cleared
+    window.location.reload();
   };
 
   const handleLinkClick = () => {
@@ -75,7 +58,7 @@ function Header() {
           // Show user info and sign out when authenticated
           <div className="header__option authenticated" onClick={handleSignOut} style={{ cursor: 'pointer' }}>
             <span className="header__optionLineOne">
-              Hello {userType === 'user' ? user.name : user.companyName}
+              Hello {userType === 'customer' ? user.name : user.companyName}
             </span>
             <span className="header__optionLineTwo">Sign Out</span>
           </div>

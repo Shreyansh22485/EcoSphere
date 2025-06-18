@@ -11,9 +11,9 @@ const {
 } = require('../controllers/cartController');
 const { protect, authorize } = require('../middleware/auth');
 
-// All cart routes require authentication and user role
+// All cart routes require authentication and customer role
 router.use(protect);
-router.use(authorize('user'));
+router.use(authorize('customer'));
 
 // Cart routes
 router.get('/', getCart);

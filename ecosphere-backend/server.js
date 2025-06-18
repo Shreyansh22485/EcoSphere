@@ -18,6 +18,7 @@ const impactRoutes = require('./routes/impact');
 const gamificationRoutes = require('./routes/gamification');
 const aiRoutes = require('./routes/ai');
 const dashboardRoutes = require('./routes/dashboard');
+const groupRoutes = require('./routes/groups');
 
 // Import middleware
 const { errorHandler } = require('./middleware/error');
@@ -76,6 +77,7 @@ app.use('/api/impact', impactRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/groups', groupRoutes);
 
 // 404 handler
 app.use('/{*any}', (req, res) => {

@@ -25,6 +25,9 @@ import Feedback from "./Component/feedback";
 import ProductDetails from "./Component/ProductDetails";
 import ProductDetails1 from "./Component/ProductDetails1";
 import FSubmitted from "./Component/Feedbacksubmitted";
+import EcoSphereGroups from "./Component/EcoSphereGroups";
+import GroupDetail from "./Component/GroupDetail";
+import CreateGroup from "./Component/CreateGroup";
 import { AuthProvider } from "./hooks/useAuth";
 import { CartProvider } from "./hooks/useCart";
 
@@ -60,6 +63,11 @@ function App() {
               <Route path="/product/:id" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
               <Route path="/product" element={[<Headergreen />, <NavBarg />, <ProductDetails />, <Footer />]}/>
               <Route path="/product1" element={[<Headergreen />, <NavBarg />, <ProductDetails1 />, <Footer />]}/>
+              
+              {/* EcoSphere Groups Routes */}
+              <Route path="/groups" element={[<Headergreen />, <NavBarg />, <EcoSphereGroups />, <Footer />]}/>
+              <Route path="/groups/create" element={[<Headergreen />, <NavBarg />, <CreateGroup />, <Footer />]}/>
+              <Route path="/groups/:groupId" element={[<Headergreen />, <NavBarg />, <GroupDetail />, <Footer />]}/>
 
             </Routes>
           </div>

@@ -24,15 +24,15 @@ const protect = asyncHandler(async (req, res, next) => {
 
   try {
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Get user or partner from token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);    // Get user or partner from token
     if (decoded.type === 'user') {
       req.user = await User.findById(decoded.id);
-      req.userType = 'user';
+      req.userType = 'customer';
+      console.log('🔐 BACKEND AUTH - Customer authenticated:', req.user.name, 'ID:', req.user._id);
     } else if (decoded.type === 'partner') {
       req.user = await Partner.findById(decoded.id);
       req.userType = 'partner';
+      console.log('🔐 BACKEND AUTH - Partner authenticated:', req.user.companyName, 'ID:', req.user._id);
     }
 
     if (!req.user) {
@@ -78,14 +78,14 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      if (decoded.type === 'user') {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);      if (decoded.type === 'user') {
         req.user = await User.findById(decoded.id);
-        req.userType = 'user';
+        req.userType = 'customer';
+        console.log('🔐 BACKEND OPTIONAL AUTH - Customer authenticated:', req.user.name, 'ID:', req.user._id);
       } else if (decoded.type === 'partner') {
         req.user = await Partner.findById(decoded.id);
         req.userType = 'partner';
+        console.log('🔐 BACKEND OPTIONAL AUTH - Partner authenticated:', req.user.companyName, 'ID:', req.user._id);
       }
     } catch (error) {
       // Token invalid, but continue anyway

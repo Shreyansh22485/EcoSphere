@@ -31,13 +31,14 @@ const register = asyncHandler(async (req, res) => {
     totalCarbonSaved: 0,
     totalWaterSaved: 0,
     totalWastePrevented: 0
-  });
-  // Generate JWT token
+  });  // Generate JWT token
   const token = jwt.sign(
     { id: user._id, type: 'user' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
   );
+
+  console.log('🔐 BACKEND REGISTER - Customer registered:', user.name, 'ID:', user._id);
 
   res.status(201).json({
     success: true,
@@ -48,7 +49,8 @@ const register = asyncHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         ecoTier: user.ecoTier,
-        impactPoints: user.impactPoints
+        impactPoints: user.impactPoints,
+        preferences: user.preferences
       },
       token,
       userType: 'user'
@@ -93,13 +95,14 @@ const login = asyncHandler(async (req, res) => {
       success: false,
       message: 'Invalid credentials'
     });
-  }
-  // Generate JWT token
+  }  // Generate JWT token
   const token = jwt.sign(
     { id: user._id, type: 'user' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
   );
+
+  console.log('🔐 BACKEND LOGIN - Customer logged in:', user.name, 'ID:', user._id);
 
   res.status(200).json({
     success: true,
@@ -112,6 +115,7 @@ const login = asyncHandler(async (req, res) => {
         ecoTier: user.ecoTier,
         impactPoints: user.impactPoints,
         totalCarbonSaved: user.totalCarbonSaved,
+        preferences: user.preferences,
         joinedAt: user.createdAt
       },
       token,
@@ -171,13 +175,14 @@ const registerPartner = asyncHandler(async (req, res) => {
     email,
     password
   });
-
   // Generate JWT token
   const token = jwt.sign(
     { id: partner._id, type: 'partner' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
   );
+
+  console.log('🔐 BACKEND REGISTER - Partner registered:', partner.companyName, 'ID:', partner._id);
 
   res.status(201).json({
     success: true,
@@ -230,13 +235,14 @@ const loginPartner = asyncHandler(async (req, res) => {
       message: 'Invalid credentials'
     });
   }
-
   // Generate JWT token
   const token = jwt.sign(
     { id: partner._id, type: 'partner' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE }
   );
+
+  console.log('🔐 BACKEND LOGIN - Partner logged in:', partner.companyName, 'ID:', partner._id);
 
   res.status(200).json({
     success: true,
