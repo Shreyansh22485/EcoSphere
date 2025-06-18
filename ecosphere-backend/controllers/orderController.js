@@ -261,12 +261,10 @@ const getUserOrders = async (req, res) => {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const orders = await Order.find({ customer: userId })
-      .populate('orderItems.product', 'name images price')
+    const skip = (page - 1) * limit;    const orders = await Order.find({ customer: userId })
+      .populate('orderItems.product', 'name images price ecoScore')
       .populate('orderItems.partner', 'companyName')
-      .sort({ orderDate: -1 })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 

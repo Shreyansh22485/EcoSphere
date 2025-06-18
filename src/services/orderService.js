@@ -10,11 +10,10 @@ class OrderService {
       throw new Error(error.response?.data?.message || 'Failed to create order');
     }
   }
-
   // Get user's orders
   async getUserOrders() {
     try {
-      const response = await apiService.get('/orders/user');
+      const response = await apiService.get('/orders');
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Failed to fetch orders');
