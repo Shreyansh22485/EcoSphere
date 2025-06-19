@@ -85,10 +85,9 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsi
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
-
   return (
     <div className="productg">
-      <div className="product__bestseller">BESTSELLER</div>
+      <div className="product__bestseller">🌿 ECO BESTSELLER</div>
       <div className="product__info">
         <p>{title}</p>
         <div className="product__price">
@@ -98,22 +97,25 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsi
         <div className="product__rating">
           {Array(rating)
             .fill()
-            .map((rate) => (
-              <p>⭐</p>
+            .map((_, index) => (
+              <p key={index}>⭐</p>
             ))}
         </div>
       </div>
-      <img src={image} alt="" />
-      <div className="eco_details">        <div className="carbon_details">
-          <img src="../images/co2badge.png" alt="" className="eco_image"></img>
+      <img src={image} alt={title} />
+      <div className="eco_details">
+        <div className="carbon_details">
+          <img src="../images/co2badge.png" alt="CO2 Badge" className="eco_image" />
           <p 
             className="eco_text"
             title={aiInsights?.carbonReduced?.description || "CO2 reduction compared to conventional alternatives"}
             style={{cursor: "help"}}
           >
-            {aiInsights?.carbonReduced?.value || carbon_red}kg CO2 Saved
+            💨 {aiInsights?.carbonReduced?.value || carbon_red}kg CO2 Saved
           </p>
-        </div><div className="badge_details">
+        </div>
+
+        <div className="badge_details">
           <div className="popover_trigger">
             <div
               id="ecoscoreToTrack"
@@ -121,8 +123,8 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsi
               style={{
                 backgroundColor: ecoscore_color,
                 color: "white",
-                padding: "8px 12px",
-                borderRadius: "20px",
+                padding: "10px 16px",
+                borderRadius: "25px",
                 fontWeight: "bold",
                 fontSize: "14px",
                 cursor: "pointer",
@@ -131,28 +133,31 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsi
               onMouseEnter={showEcoScorePopover}
               onMouseLeave={hideEcoScorePopover}
             >
-              {ecoscore}/1000
+              🌱 {ecoscore}/1000
             </div>
             {isEcoScorePopoverVisible && (
               <div className="popover_content">
-                <div className="content">                  <div 
+                <div className="content">
+                  <div 
                     style={{
-                      padding: "15px",
+                      padding: "20px",
                       backgroundColor: "white",
-                      borderRadius: "8px",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                      minWidth: "200px"
+                      borderRadius: "12px",
+                      boxShadow: "0 10px 30px rgba(76, 175, 80, 0.2)",
+                      minWidth: "240px",
+                      border: "2px solid #e8f5e8"
                     }}
                   >
-                    <h4 style={{margin: "0 0 10px 0", color: ecoscore_color}}>
+                    <h4 style={{margin: "0 0 12px 0", color: ecoscore_color, fontSize: "16px", fontWeight: "700"}}>
                       {ecoscore_tier}: {ecoscore_text}
-                    </h4>                    <p style={{margin: "0", fontSize: "12px", color: "#666"}}>
-                      This product scores {ecoscore} out of 1000 on our sustainability metrics, 
+                    </h4>
+                    <p style={{margin: "0", fontSize: "13px", color: "#2e7d32", lineHeight: "1.5"}}>
+                      🌍 This product scores <strong>{ecoscore} out of 1000</strong> on our sustainability metrics, 
                       including materials, manufacturing, packaging, and carbon footprint.
                       {aiInsights?.summary && (
                         <>
                           <br /><br />
-                          <strong>Impact:</strong> {aiInsights.summary}
+                          <strong>🎯 Impact:</strong> {aiInsights.summary}
                         </>
                       )}
                     </p>
@@ -163,28 +168,19 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsi
             {showInfoPopover && id === "875615" && !dontShowAgain && (
               <div className="badge_info_popover_content_nav">
                 <div className="badge_info_triangle"></div>
-                <p>Hover over the EcoScore to see sustainability details.</p>
+                <p>🌱 Hover over the EcoScore to see detailed sustainability information and environmental impact metrics.</p>
                 <button onClick={closeInfoPopover} className="got_it">
-                  Got It
+                  Got It! 🌿
                 </button>
               </div>
             )}
           </div>
-          <p className="eco_text">EcoScore</p>
-        </div>      </div>
+          <p className="eco_text">🏆 EcoScore</p>
+        </div>
+      </div>
       <Link to={`/product/${id}`} style={{ textDecoration: 'none', width: '100%' }}>
-        <button style={{
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          padding: "12px 24px",
-          fontSize: "14px",
-          fontWeight: "bold",
-          borderRadius: "6px",
-          cursor: "pointer",
-          width: "100%"
-        }}>
-          Buy with IMPACT
+        <button className="buy-with-impact-btn">
+          🌱 Buy with IMPACT 🌍
         </button>
       </Link>
     </div>
