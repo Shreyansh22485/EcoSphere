@@ -133,18 +133,18 @@ const createGroupBuyOrders = async (group, groupBuy) => {
         createdOrders.push(order);
         
         console.log(`✅ Order created for ${participant.user}: ${order.orderNumber} (${participant.quantity} items, ${groupBuyImpactPoints} impact points)`);
-        
-        // Update user's impact points with 2x bonus
+          // Update user's impact points with 2x bonus
         await User.findByIdAndUpdate(participant.user, {
           $inc: {
-            'impactScore.totalPoints': groupBuyImpactPoints,
-            'impactScore.carbonSaved': baseCarbon,
-            'impactScore.waterSaved': baseWater,
-            'impactScore.wastePrevented': baseWaste
-          }        });
+            impactPoints: groupBuyImpactPoints,
+            totalCarbonSaved: baseCarbon,
+            totalWaterSaved: baseWater,
+            totalWastePrevented: baseWaste
+          }
+        });        
+        console.log(`✅ Created order ${order.orderNumber} for user ${participant.user} (${participant.quantity} items, ${groupBuyImpactPoints} impact points)`);
         
-        console.log(`✅ Created order ${orderNumber} for user ${participant.user} (${participant.quantity} items, ${groupBuyImpactPoints} impact points)`);
-          } catch (error) {
+      } catch (error) {
         console.error(`❌ Error creating order for participant ${participant.user}:`, error.message);
         console.error('Participant data:', participant);
         console.error('Product data keys:', product ? Object.keys(product.toObject ? product.toObject() : product) : 'Product is null');
@@ -1294,7 +1294,7 @@ const startGroupBuy = asyncHandler(async (req, res) => {
     member.user.toString() === req.user.id.toString()
   );
   
-  if (!userMembership || !['leader', 'moderator'].includes(userMembership.role)) {
+  if (!userMembership) {
     return res.status(403).json({
       success: false,
       message: 'Not authorized to start group buys'
