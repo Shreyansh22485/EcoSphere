@@ -169,48 +169,48 @@ const GroupDetail = () => {
               <div className="stat">
                 <FaCalendar className="stat-icon" />
                 <span>Created {new Date(group.createdAt).toLocaleDateString()}</span>
+              </div>            </div>
+            
+            {/* Leader and Action Buttons Container */}
+            <div className="leader-actions-container">
+              <div className="group-leader">
+                <FaCrown className="crown-icon" />
+                <span>Led by {group.leader?.name}</span>
               </div>
-            </div>
-            
-            <div className="group-leader">
-              <FaCrown className="crown-icon" />
-              <span>Led by {group.leader?.name}</span>
-            </div>
-          </div>
-          
-          <div className="header-actions">            {user && !userMembership && (
-              <button 
-                onClick={handleJoinGroup}
-                className="btn btn-join"
-                disabled={group.memberCount >= group.maxMembers}
-              >
-                <FaUserPlus /> {group.memberCount >= group.maxMembers ? 'Group Full' : 'Join Group'}
-              </button>
-            )}
-            
-            {userMembership && (
-              <div className="member-actions">
-                <div className="member-info">
-                  <span className="member-badge">
-                    {userMembership.role === 'leader' && <FaCrown />}
-                    {userMembership.role.charAt(0).toUpperCase() + userMembership.role.slice(1)}
-                  </span>
-                </div>
+              
+              <div className="inline-actions">
+                {user && !userMembership && (
+                  <button 
+                    onClick={handleJoinGroup}
+                    className="btn btn-join-inline"
+                    disabled={group.memberCount >= group.maxMembers}
+                  >
+                    <FaUserPlus /> {group.memberCount >= group.maxMembers ? 'Group Full' : 'Join Group'}
+                  </button>
+                )}
                 
-                <button 
-                  onClick={handleLeaveGroup}
-                  className="btn btn-outline"
-                >
-                  <FaUserMinus /> Leave Group
-                </button>
-                
-                {canManageGroup() && (
-                  <Link to={`/groups/${groupId}/manage`} className="btn btn-secondary">
-                    <FaEdit /> Manage Group
-                  </Link>
+                {userMembership && (
+                  <div className="member-actions-inline">
+                    <span className="member-badge">
+                      {userMembership.role === 'leader' && <FaCrown />}
+                      {userMembership.role.charAt(0).toUpperCase() + userMembership.role.slice(1)}
+                    </span>
+                    
+                    <button 
+                      onClick={handleLeaveGroup}
+                      className="btn btn-outline-inline"
+                    >
+                      <FaUserMinus /> Leave Group
+                    </button>
+                      {canManageGroup() && (
+                      <Link to={`/groups/${groupId}/manage`} className="btn btn-secondary-inline">
+                        <FaEdit /> Manage
+                      </Link>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
