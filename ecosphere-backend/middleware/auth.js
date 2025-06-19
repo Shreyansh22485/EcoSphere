@@ -67,34 +67,46 @@ const authorize = (...userTypes) => {
 };
 
 /**
- * Optional authentication - doesn't fail if no token
+ * Optional authentication - sets req.user if token is present, but doesn't reject if missing
  */
 const optionalAuth = asyncHandler(async (req, res, next) => {
   let token;
 
+  // Check for token in Authorization header
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
   }
 
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);      if (decoded.type === 'user') {
-        req.user = await User.findById(decoded.id);
-        req.userType = 'customer';
-        console.log('🔐 BACKEND OPTIONAL AUTH - Customer authenticated:', req.user.name, 'ID:', req.user._id);
-      } else if (decoded.type === 'partner') {
-        req.user = await Partner.findById(decoded.id);
-        req.userType = 'partner';
-        console.log('🔐 BACKEND OPTIONAL AUTH - Partner authenticated:', req.user.companyName, 'ID:', req.user._id);
-      }
-    } catch (error) {
-      // Token invalid, but continue anyway
-      req.user = null;
-      req.userType = null;
-    }
+  // If no token, continue without setting req.user
+  if (!token) {
+    console.log('🔓 OPTIONAL AUTH - No token provided, continuing without authentication');
+    return next();
   }
 
-  next();
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Get user or partner from token
+    if (decoded.type === 'user') {
+      req.user = await User.findById(decoded.id);
+      req.userType = 'customer';
+      console.log('🔐 OPTIONAL AUTH - Customer authenticated:', req.user.name, 'ID:', req.user._id);
+    } else if (decoded.type === 'partner') {
+      req.user = await Partner.findById(decoded.id);
+      req.userType = 'partner';
+      console.log('🔐 OPTIONAL AUTH - Partner authenticated:', req.user.companyName, 'ID:', req.user._id);
+    }
+
+    if (!req.user) {
+      console.log('🔓 OPTIONAL AUTH - User not found, continuing without authentication');
+    }
+
+    next();
+  } catch (error) {
+    console.log('🔓 OPTIONAL AUTH - Invalid token, continuing without authentication');
+    next();
+  }
 });
 
 module.exports = {

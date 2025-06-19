@@ -21,11 +21,11 @@ const {
   joinGroupBuy,
   leaveGroupBuy
 } = require('../controllers/groupController');
-const { protect } = require('../middleware/auth');
+const { protect, optionalAuth } = require('../middleware/auth');
 
 // Public routes
 router.get('/', getGroups); 
-router.get('/:id', getGroup);
+router.get('/:id', optionalAuth, getGroup);  // Use optional auth to get user membership
 
 // Public group information routes (no auth required)
 router.get('/:id/members', getGroupMembers);

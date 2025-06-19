@@ -62,6 +62,11 @@ const getGroups = asyncHandler(async (req, res) => {
  * @access  Public
  */
 const getGroup = asyncHandler(async (req, res) => {
+  console.log('=== GET GROUP DEBUG ===');
+  console.log('User authenticated:', !!req.user);
+  console.log('User ID:', req.user?.id);
+  console.log('Group ID:', req.params.id);
+  
   const group = await Group.findById(req.params.id)
     .populate('leader', 'name')
     .populate('members.user', 'name')
@@ -74,12 +79,18 @@ const getGroup = asyncHandler(async (req, res) => {
     });
   }
   
+  console.log('Group members:', group.members.map(m => ({ userId: m.user._id, name: m.user.name, role: m.role })));
+  
   // Check if user is member (if authenticated)
   let userMembership = null;
   if (req.user) {
     userMembership = group.members.find(member => 
       member.user._id.toString() === req.user.id.toString()
     );
+    console.log('User membership found:', !!userMembership);
+    console.log('User membership details:', userMembership);
+  } else {
+    console.log('No user authenticated, userMembership will be null');
   }
   
   res.status(200).json({

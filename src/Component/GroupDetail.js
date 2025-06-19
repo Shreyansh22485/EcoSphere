@@ -9,7 +9,8 @@ import { useAuth } from '../hooks/useAuth';
 const GroupDetail = () => {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();  const [group, setGroup] = useState(null);
+  const { user } = useAuth();
+  const [group, setGroup] = useState(null);
   const [userMembership, setUserMembership] = useState(null);
   const [members, setMembers] = useState([]);
   const [stats, setStats] = useState(null);
