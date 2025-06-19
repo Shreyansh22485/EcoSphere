@@ -551,7 +551,8 @@ const getGroupMembers = asyncHandler(async (req, res) => {
     });
   }
 
-  // Filter out members with null users before returning  const validMembers = group.members.filter(member => member.user && member.user._id);
+  // Filter out members with null users before returning  
+  const validMembers = group.members.filter(member => member.user && member.user._id);
   
   res.status(200).json({
     success: true,
@@ -736,6 +737,7 @@ const getGroupStats = asyncHandler(async (req, res) => {
   }
 
   // Calculate member stats (filter out members with null users)
+
   const validMembers = group.members.filter(member => member.user && member.user._id);
   const memberStats = validMembers.map(member => ({
     user: member.user,
