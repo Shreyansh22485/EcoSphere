@@ -119,10 +119,9 @@ const OrderSchema = new mongoose.Schema({
     sameAsShipping: { type: Boolean, default: true }
   },
     // Payment information
-  payment: {
-    method: {
+  payment: {    method: {
       type: String,
-      enum: ['credit_card', 'debit_card', 'paypal', 'apple_pay', 'google_pay', 'bank_transfer'],
+      enum: ['credit_card', 'debit_card', 'paypal', 'apple_pay', 'google_pay', 'bank_transfer', 'group_buy_auto'],
       required: false,
       default: 'credit_card'
     },

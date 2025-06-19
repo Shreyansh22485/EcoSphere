@@ -184,11 +184,15 @@ function Orders() {
                   <div className="order-info">
                     <h3 className="order-number">Order #{order.orderNumber}</h3>
                     <p className="order-date">Placed on {formatDate(order.createdAt)}</p>
-                  </div>
-                  <div className="order-status">
+                  </div>                  <div className="order-status">
                     <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
+                    {order.payment?.method === 'group_buy_auto' && (
+                      <span className="group-buy-badge">
+                        🛒 Group Buy
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -228,10 +232,12 @@ function Orders() {
 
                   <div className="order-impact">
                     <h4>🌱 Environmental Impact</h4>
-                    <div className="impact-metrics">
-                      <div className="impact-metric">
+                    <div className="impact-metrics">                      <div className="impact-metric">
                         <span>💎 Impact Points:</span>
                         <strong>+{order.totalImpact?.impactPoints || 0}</strong>
+                        {order.payment?.method === 'group_buy_auto' && (
+                          <span className="group-buy-bonus">2x Bonus!</span>
+                        )}
                       </div>
                       <div className="impact-metric">
                         <span>🌍 CO₂ Saved:</span>

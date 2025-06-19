@@ -1,6 +1,182 @@
 const Group = require('../models/Group');
 const User = require('../models/User');
+const Order = require('../models/Order');
+const Product = require('../models/Product');
 const { asyncHandler } = require('../middleware/error');
+
+// Helper function to create orders automatically when group buy completes
+const createGroupBuyOrders = async (group, groupBuy) => {
+  console.log(`🚀 Creating automatic orders for completed group buy: ${groupBuy._id}`);
+    try {
+    // Get the product details
+    const product = await Product.findById(groupBuy.product).populate('partner', 'name');
+    
+    if (!product) {
+      console.error('❌ Product not found for group buy');
+      return;
+    }
+
+    console.log(`🚀 AUTO-CREATING ORDERS for Group Buy: ${groupBuy._id}`);
+    console.log(`📦 Product: ${product.name}, Participants: ${groupBuy.participants.length}`);
+
+    const createdOrders = [];
+    
+    // Create individual order for each participant
+    for (const participant of groupBuy.participants) {
+      try {        // Calculate prices with group buy discount
+        const originalPrice = Number(product.price) || 0;
+        const discountedPrice = originalPrice * (1 - (Number(groupBuy.discountPercent) || 0) / 100);
+        const itemTotal = discountedPrice * Number(participant.quantity);
+        
+        // Calculate impact with 2x bonus for group buying
+        const baseImpactPoints = (Number(product.impactPerPurchase?.impactPoints) || 0) * Number(participant.quantity);
+        const groupBuyImpactPoints = baseImpactPoints * 2; // 2x bonus!
+        
+        const baseCarbon = (Number(product.impactPerPurchase?.carbonSaved) || 0) * Number(participant.quantity);
+        const baseWater = (Number(product.impactPerPurchase?.waterSaved) || 0) * Number(participant.quantity);
+        const baseWaste = (Number(product.impactPerPurchase?.wastePrevented) || 0) * Number(participant.quantity);
+        
+        // Calculate tax and shipping (prototype: simple logic)
+        const tax = itemTotal * 0.08; // 8% tax
+        const shipping = itemTotal > 50 ? 0 : 5.99; // Free shipping over $50
+        const total = itemTotal + tax + shipping;
+        
+        // Generate order number
+        const year = new Date().getFullYear();
+        const month = String(new Date().getMonth() + 1).padStart(2, '0');
+        const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        const orderNumber = `GRP${year}${month}${randomNum}`;
+        
+        // Create the order
+        const order = new Order({
+          orderNumber,
+          customer: participant.user,
+          orderItems: [{
+            product: product._id,
+            partner: product.partner._id,
+            quantity: participant.quantity,
+            price: discountedPrice,
+            ecoScore: Number(product.ecoScore?.overall) || Number(product.ecoScore) || 0,
+            impact: {
+              carbonSaved: baseCarbon,
+              waterSaved: baseWater,
+              wastePrevented: baseWaste,
+              impactPoints: groupBuyImpactPoints
+            },
+            // Item-level group buying info
+            groupBuying: {
+              isGroupBuy: true,
+              groupId: group._id,
+              discount: groupBuy.discountPercent || 0,
+              originalPrice: originalPrice,
+              groupContributionPoints: Math.floor(groupBuyImpactPoints * 0.1) // 10% contribution to group
+            }
+          }],
+          orderSummary: {
+            subtotal: itemTotal,
+            tax: tax,
+            shipping: shipping,
+            discount: (originalPrice - discountedPrice) * participant.quantity,
+            total: total
+          },
+          totalImpact: {
+            carbonSaved: baseCarbon,
+            waterSaved: baseWater,
+            wastePrevented: baseWaste,
+            impactPoints: groupBuyImpactPoints
+          },
+          // Order-level group buying info
+          groupBuying: {
+            hasGroupItems: true,
+            totalGroupDiscount: (originalPrice - discountedPrice) * participant.quantity,
+            groupOrders: [{
+              groupId: group._id,
+              productId: product._id,
+              participantCount: groupBuy.participants.length,
+              discountApplied: groupBuy.discountPercent || 0,
+              groupPointsEarned: Math.floor(groupBuyImpactPoints * 0.1)
+            }],
+            primaryGroup: group._id,
+            groupPointsEarned: Math.floor(groupBuyImpactPoints * 0.1)
+          },
+          // Default addresses (prototype)
+          shippingAddress: {
+            name: "Group Buy Member",
+            street: "Default Street",
+            city: "Default City",
+            state: "Default State",
+            country: "USA",
+            zipCode: "12345"
+          },
+          billingAddress: {
+            name: "Group Buy Member",
+            street: "Default Street",
+            city: "Default City",
+            state: "Default State",
+            country: "USA",
+            zipCode: "12345",
+            sameAsShipping: true
+          },
+          payment: {
+            method: 'group_buy_auto', // Special payment method for auto-created orders
+            status: 'completed' // Skip payment for prototype
+          },
+          status: 'confirmed', // Auto-confirm group buy orders
+          orderDate: new Date(),
+          // EcoSphere features
+          ecoSphereFeatures: {
+            isEcoOrder: (product.ecoScore || 0) >= 60,
+            sustainabilityGoal: 'Group buying for better environmental impact'
+          }
+        });
+          await order.save();
+        createdOrders.push(order);
+        
+        console.log(`✅ Order created for ${participant.user}: ${order.orderNumber} (${participant.quantity} items, ${groupBuyImpactPoints} impact points)`);
+        
+        // Update user's impact points with 2x bonus
+        await User.findByIdAndUpdate(participant.user, {
+          $inc: {
+            'impactScore.totalPoints': groupBuyImpactPoints,
+            'impactScore.carbonSaved': baseCarbon,
+            'impactScore.waterSaved': baseWater,
+            'impactScore.wastePrevented': baseWaste
+          }        });
+        
+        console.log(`✅ Created order ${orderNumber} for user ${participant.user} (${participant.quantity} items, ${groupBuyImpactPoints} impact points)`);
+          } catch (error) {
+        console.error(`❌ Error creating order for participant ${participant.user}:`, error.message);
+        console.error('Participant data:', participant);
+        console.error('Product data keys:', product ? Object.keys(product.toObject ? product.toObject() : product) : 'Product is null');
+        
+        // Continue with other participants even if one fails
+        continue;
+      }
+    }
+    
+    // Update group's total impact after all orders are created
+    const totalGroupImpactPoints = createdOrders.reduce((sum, order) => sum + order.totalImpact.impactPoints, 0);
+    const totalGroupCarbon = createdOrders.reduce((sum, order) => sum + order.totalImpact.carbonSaved, 0);
+    const totalGroupWater = createdOrders.reduce((sum, order) => sum + order.totalImpact.waterSaved, 0);
+    const totalGroupWaste = createdOrders.reduce((sum, order) => sum + order.totalImpact.wastePrevented, 0);
+    
+    // Update group's total impact
+    group.totalImpact.impactPoints += totalGroupImpactPoints;
+    group.totalImpact.carbonSaved += totalGroupCarbon;
+    group.totalImpact.waterSaved += totalGroupWater;
+    group.totalImpact.wastePrevented += totalGroupWaste;
+    group.totalImpact.totalOrders += createdOrders.length;
+    
+    console.log(`📊 Updated group total impact: +${totalGroupImpactPoints} points, +${totalGroupCarbon}kg CO2, +${totalGroupWater}L water, +${totalGroupWaste}kg waste`);
+    
+    console.log(`🎉 Successfully created ${createdOrders.length} orders for group buy completion`);
+    return createdOrders;
+    
+  } catch (error) {
+    console.error('❌ Error in createGroupBuyOrders:', error);
+    throw error;
+  }
+};
 
 /**
  * @desc    Get all groups (with filters)
@@ -1256,8 +1432,7 @@ const joinGroupBuy = asyncHandler(async (req, res) => {
   
   // Update current quantity
   groupBuy.currentQuantity += quantity || 1;
-  
-  // Check if target reached
+    // Check if target reached
   if (groupBuy.currentQuantity >= groupBuy.targetQuantity) {
     groupBuy.status = 'completed';
     
@@ -1276,6 +1451,16 @@ const joinGroupBuy = asyncHandler(async (req, res) => {
     
     // Update completed orders count
     group.groupBuying.completedOrders += 1;
+    
+    // 🚀 PHASE 1: Auto-create orders for all participants
+    try {
+      console.log(`🎯 Group buy completed! Auto-creating orders for ${groupBuy.participants.length} participants`);
+      await createGroupBuyOrders(group, groupBuy);
+      console.log(`✅ Successfully created orders for completed group buy ${groupBuy._id}`);
+    } catch (error) {
+      console.error(`❌ Error creating automatic orders for group buy ${groupBuy._id}:`, error);
+      // Don't fail the group buy completion if order creation fails
+    }
   } else {
     // Add activity log for participation
     group.activityLog.push({
@@ -1289,13 +1474,30 @@ const joinGroupBuy = asyncHandler(async (req, res) => {
       timestamp: new Date()
     });
   }
+    await group.save();
   
-  await group.save();
+  // Prepare response message
+  let responseMessage = 'Successfully joined group buy';
+  let additionalData = {};
+  
+  if (groupBuy.status === 'completed') {
+    responseMessage = '🎉 Group buy completed! Orders have been automatically created for all participants';
+    additionalData = {
+      groupBuyCompleted: true,
+      finalQuantity: groupBuy.currentQuantity,
+      participantCount: groupBuy.participants.length,
+      ordersAutoCreated: true,
+      impactPointsEarned: `2x bonus applied (${groupBuy.participants.find(p => p.user.toString() === req.user.id.toString())?.quantity || 0} items)`
+    };
+  }
   
   res.status(200).json({
     success: true,
-    data: groupBuy,
-    message: 'Successfully joined group buy'
+    data: {
+      ...groupBuy.toObject(),
+      ...additionalData
+    },
+    message: responseMessage
   });
 });
 

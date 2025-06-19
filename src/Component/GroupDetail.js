@@ -14,10 +14,11 @@ const GroupDetail = () => {
   const [userMembership, setUserMembership] = useState(null);
   const [members, setMembers] = useState([]);
   const [stats, setStats] = useState(null);
-  const [groupBuys, setGroupBuys] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [groupBuys, setGroupBuys] = useState([]);  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successData, setSuccessData] = useState(null);
 
   useEffect(() => {
     if (groupId) {
@@ -79,6 +80,44 @@ const GroupDetail = () => {
       } catch (err) {
         alert(err.message);
       }
+    }
+  };
+
+  const handleJoinGroupBuy = async (groupBuyId, defaultQuantity = 1) => {
+    try {
+      const quantity = prompt(`Enter quantity (default: ${defaultQuantity}):`, defaultQuantity) || defaultQuantity;
+      const numQuantity = parseInt(quantity);
+      
+      if (numQuantity < 1) {
+        alert('Quantity must be at least 1');
+        return;
+      }
+
+      const response = await groupService.joinGroupBuy(groupId, groupBuyId, { quantity: numQuantity });
+      
+      if (response.data.groupBuyCompleted) {
+        // Show success modal for completed group buy
+        setSuccessData({
+          type: 'group_buy_completed',
+          finalQuantity: response.data.finalQuantity,
+          participantCount: response.data.participantCount,
+          targetQuantity: response.data.targetQuantity,
+          impactPointsEarned: response.data.impactPointsEarned,
+          ordersAutoCreated: response.data.ordersAutoCreated,
+          userQuantity: numQuantity
+        });
+        setShowSuccessModal(true);
+      } else {
+        // Regular join success
+        alert('Successfully joined group buy!');
+      }
+      
+      // Refresh data
+      fetchGroupDetails();
+      
+    } catch (error) {
+      console.error('Error joining group buy:', error);
+      alert(error.message || 'Failed to join group buy');
     }
   };
 
@@ -576,9 +615,11 @@ const GroupDetail = () => {
                           onClick={() => navigate(`/product/${groupBuy.product._id}`)}
                         >
                           🔍 View Product
-                        </button>
-                        {groupBuy.status === 'active' && (
-                          <button className="btn-join-groupbuy">
+                        </button>                        {groupBuy.status === 'active' && (
+                          <button 
+                            className="btn-join-groupbuy"
+                            onClick={() => handleJoinGroupBuy(groupBuy._id, 1)}
+                          >
                             🛒 Join Group Buy
                           </button>
                         )}
@@ -605,8 +646,69 @@ const GroupDetail = () => {
               </div>
             )}
           </div>
-        )}
-      </div>
+        )}      </div>
+      
+      {/* Success Modal */}
+      {showSuccessModal && successData && (
+        <div className="success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="success-header">
+              <h2>🎉 Group Buy Completed!</h2>
+              <button 
+                className="close-btn" 
+                onClick={() => setShowSuccessModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="success-content">
+              <div className="success-stats">
+                <div className="stat-item">
+                  <div className="stat-value">{successData.finalQuantity}</div>
+                  <div className="stat-label">Total Items</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-value">{successData.participantCount}</div>
+                  <div className="stat-label">Participants</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-value">
+                    {Math.round((successData.finalQuantity / successData.targetQuantity) * 100)}%
+                  </div>
+                  <div className="stat-label">Achievement</div>
+                </div>
+              </div>
+              
+              <div className="success-message">
+                <p>
+                  <strong>Amazing work!</strong> Your group buy has exceeded its target of {successData.targetQuantity} items 
+                  and reached {successData.finalQuantity} items total!
+                </p>
+                
+                {successData.ordersAutoCreated && (
+                  <div className="auto-order-info">
+                    <h4>📦 Orders Automatically Created</h4>
+                    <p>
+                      Your order for <strong>{successData.userQuantity} items</strong> has been automatically 
+                      created and confirmed. You'll receive <strong>2x Impact Points</strong> as a group buy bonus!
+                    </p>
+                    <button 
+                      className="view-orders-btn"
+                      onClick={() => {
+                        setShowSuccessModal(false);
+                        navigate('/orders');
+                      }}
+                    >
+                      📋 View My Orders
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

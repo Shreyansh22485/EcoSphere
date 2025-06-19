@@ -215,7 +215,7 @@ const createProduct = asyncHandler(async (req, res) => {
       
       status: 'active',
       inventory: {
-        stock: 10, // Will be updated when approved
+        stock: 100, // Will be updated when approved
         lowStockThreshold: 10
       }
     });// Step 4: Update Partner's total impact generated
