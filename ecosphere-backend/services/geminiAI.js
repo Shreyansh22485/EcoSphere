@@ -59,34 +59,93 @@ class GeminiAIService {
       throw new Error('Failed to generate recommendations');
     }
   }
-
   /**
-   * Generate impact forecast based on user's current trends and potential purchases
+   * Generate comprehensive AI impact forecast with insights and recommendations
    */
-  async generateImpactForecast(userProfile, recentActivity, timeframe = '6months') {
+  async generateImpactForecast(userProfile, recentActivity, timeframe = '12months') {
     try {
+      const currentPoints = userProfile.impactPoints || 0;
+      const carbonSaved = userProfile.totalCarbonSaved || 0;
+      const waterSaved = userProfile.totalWaterSaved || 0;
+      const wastePrevented = userProfile.totalWastePrevented || 0;
+      const currentTier = userProfile.userTier || 'Seedling';
+      const orderCount = recentActivity.orderCount || 0;
+      
       const prompt = `
-        As an AI environmental analyst for EcoSphere, create an impact forecast for the user.
+        As an AI environmental impact analyst for EcoSphere, generate a comprehensive forecast for a user with these current stats:
         
-        User Current Impact:
-        - Impact Points: ${userProfile.impactPoints || 0}
-        - Carbon Saved: ${userProfile.totalCarbonSaved || 0} kg CO2
-        - Water Saved: ${userProfile.totalWaterSaved || 0} liters
-        - Waste Prevented: ${userProfile.totalWastePrevented || 0} kg
-        - Current Tier: ${userProfile.ecoTier || 'EcoEntry'}
+        Current Impact:
+        - Impact Points: ${currentPoints}
+        - Current Tier: ${currentTier}
+        - Total CO2 Saved: ${carbonSaved} kg
+        - Total Water Saved: ${waterSaved} liters
+        - Total Waste Prevented: ${wastePrevented} kg
         
-        Recent Activity (last 30 days):
-        - Orders: ${recentActivity.orderCount || 0}
+        Recent Activity (30 days):
+        - Orders: ${orderCount}
         - Average EcoScore: ${recentActivity.avgEcoScore || 0}
-        - Spending: $${recentActivity.totalSpent || 0}
+        - Total Spent: $${recentActivity.totalSpent || 0}
+        - Points Growth: ${recentActivity.recentPointsGrowth || 0}
         
-        Generate a ${timeframe} forecast including:
-        1. Projected environmental impact if current trends continue
-        2. Potential tier advancement timeline
-        3. Suggested monthly targets for carbon, water, and waste reduction
-        4. Key recommendations to accelerate impact
+        Tier System: Seedling (0+), Sprout (100+), Tree (500+), Forest (1500+), Planet Guardian (5000+)
         
-        Format as JSON with sections: projection, milestones, recommendations, insights.
+        Generate a detailed forecast with insights and recommendations. Return ONLY valid JSON:
+        
+        {
+          "forecast": {
+            "next30Days": {
+              "expectedPoints": number,
+              "expectedCarbon": number,
+              "expectedWater": number,
+              "expectedWaste": number,
+              "confidence": number
+            },
+            "next12Months": {
+              "expectedPoints": number,
+              "expectedCarbon": number,
+              "expectedWater": number,
+              "expectedWaste": number,
+              "expectedTier": "string",
+              "confidence": number
+            },
+            "nextMilestone": {
+              "tierName": "string",
+              "pointsNeeded": number,
+              "estimatedDays": number,
+              "rewards": ["array of reward strings"]
+            }
+          },
+          "insights": {
+            "currentTrend": "improving/stable/declining",
+            "strongestArea": "carbon/water/waste",
+            "improvementArea": "carbon/water/waste",
+            "personalizedTip": "specific actionable advice",
+            "impactComparison": "comparison to average user",
+            "motivationalMessage": "encouraging message"
+          },
+          "recommendations": [
+            {
+              "type": "product/habit/goal",
+              "title": "recommendation title",
+              "description": "detailed description",
+              "expectedImpact": "impact description",
+              "priority": "high/medium/low"
+            }
+          ],
+          "achievements": {
+            "nearbyBadges": [
+              {
+                "name": "badge name",
+                "description": "badge description",
+                "requirement": "requirement text",
+                "progress": number (0-100)
+              }
+            ]
+          }
+        }
+        
+        Make realistic projections based on current patterns. Be motivational but accurate.
+        Consider seasonal trends and user engagement level for predictions.
       `;
 
       const result = await this.model.generateContent(prompt);
@@ -94,19 +153,212 @@ class GeminiAIService {
       const text = response.text();
       
       try {
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        // Clean and parse AI response
+        const cleanedText = text.replace(/```json\s*|\s*```/g, '').trim();
+        const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+        
         if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+          const forecastData = JSON.parse(jsonMatch[0]);
+          
+          // Add metadata
+          forecastData.metadata = {
+            generatedAt: new Date(),
+            userId: userProfile._id,
+            basedOnOrders: orderCount,
+            currentTier: currentTier,
+            forecastMethod: 'gemini_ai'
+          };
+          
+          return forecastData;
         }
       } catch (parseError) {
-        console.warn('Could not parse forecast as JSON, returning formatted text');
+        console.warn('Could not parse AI forecast, using fallback calculations');
       }
       
-      return { forecast: text };
+      // Fallback calculation if AI parsing fails
+      return this.generateFallbackForecast(userProfile, recentActivity);
+      
     } catch (error) {
-      console.error('Error generating impact forecast:', error);
-      throw new Error('Failed to generate impact forecast');
+      console.error('Error generating AI impact forecast:', error);
+      return this.generateFallbackForecast(userProfile, recentActivity);
     }
+  }
+
+  /**
+   * Generate fallback forecast when AI fails
+   */
+  generateFallbackForecast(userProfile, recentActivity) {
+    const currentPoints = userProfile.impactPoints || 0;
+    const carbonSaved = userProfile.totalCarbonSaved || 0;
+    const waterSaved = userProfile.totalWaterSaved || 0;
+    const wastePrevented = userProfile.totalWastePrevented || 0;
+    const currentTier = userProfile.userTier || 'Seedling';
+    const orderCount = recentActivity?.orderCount || 0;
+    
+    // Calculate growth projections
+    const monthlyGrowth = Math.max(currentPoints * 0.15, orderCount > 0 ? 75 : 25);
+    const next30DaysPoints = Math.round(monthlyGrowth);
+    const next12MonthsPoints = Math.round(monthlyGrowth * 12);
+    
+    // Determine next tier and points needed
+    const tierThresholds = { 
+      'Seedling': 100, 
+      'Sprout': 500, 
+      'Tree': 1500, 
+      'Forest': 5000 
+    };
+    
+    let nextTier = 'Planet Guardian';
+    let pointsNeeded = 0;
+    
+    for (const [tier, threshold] of Object.entries(tierThresholds)) {
+      if (currentPoints < threshold) {
+        nextTier = tier;
+        pointsNeeded = threshold - currentPoints;
+        break;
+      }
+    }
+    
+    const estimatedDays = pointsNeeded > 0 ? Math.round(pointsNeeded / (monthlyGrowth / 30)) : 0;
+    
+    return {
+      forecast: {
+        next30Days: {
+          expectedPoints: next30DaysPoints,
+          expectedCarbon: Math.round(carbonSaved * 0.2 + 2),
+          expectedWater: Math.round(waterSaved * 0.15 + 10),
+          expectedWaste: Math.round(wastePrevented * 0.25 + 1),
+          confidence: orderCount > 2 ? 75 : 60
+        },
+        next12Months: {
+          expectedPoints: next12MonthsPoints,
+          expectedCarbon: Math.round(carbonSaved * 2.5 + 25),
+          expectedWater: Math.round(waterSaved * 2.0 + 120),
+          expectedWaste: Math.round(wastePrevented * 3.0 + 15),
+          expectedTier: currentPoints + next12MonthsPoints >= 5000 ? 'Planet Guardian' : nextTier,
+          confidence: orderCount > 2 ? 80 : 65
+        },
+        nextMilestone: {
+          tierName: nextTier,
+          pointsNeeded: pointsNeeded,
+          estimatedDays: estimatedDays,
+          rewards: this.getTierRewards(nextTier)
+        }
+      },
+      insights: {
+        currentTrend: orderCount > 1 ? 'improving' : currentPoints > 50 ? 'stable' : 'starting',
+        strongestArea: carbonSaved > waterSaved ? 'carbon' : waterSaved > wastePrevented ? 'water' : 'waste',
+        improvementArea: carbonSaved < 5 ? 'carbon' : waterSaved < 50 ? 'water' : 'waste',
+        personalizedTip: this.getPersonalizedTip(userProfile, recentActivity),
+        impactComparison: this.getImpactComparison(currentPoints),
+        motivationalMessage: this.getMotivationalMessage(currentTier, orderCount)
+      },
+      recommendations: this.getRecommendations(userProfile, recentActivity),
+      achievements: {
+        nearbyBadges: this.getNearbyBadges(userProfile)
+      },
+      metadata: {
+        generatedAt: new Date(),
+        userId: userProfile._id,
+        basedOnOrders: orderCount,
+        currentTier: currentTier,
+        forecastMethod: 'fallback'
+      }
+    };
+  }
+
+  getTierRewards(tierName) {
+    const rewards = {
+      'Sprout': ['5% Eco Discount', 'First Steps Badge', 'Beta Feature Access'],
+      'Tree': ['10% Eco Discount', 'Carbon Saver Badge', 'Premium Product Preview'],
+      'Forest': ['15% Eco Discount', 'Eco Expert Network', 'Green Conference Invite'],
+      'Planet Guardian': ['20% Eco Discount', 'Guardian Status', 'Exclusive Events']
+    };
+    return rewards[tierName] || ['Achievement Unlocked'];
+  }
+
+  getPersonalizedTip(userProfile, recentActivity) {
+    const tips = [
+      'Try water-saving products to boost your environmental impact!',
+      'Consider carbon-reducing products for your next purchase.',
+      'Explore waste-prevention items to maximize your eco-score.',
+      'Join group buys for extra impact points and better prices!',
+      'Regular eco-friendly purchases build consistent impact over time.'
+    ];
+    return tips[Math.floor(Math.random() * tips.length)];
+  }
+
+  getImpactComparison(currentPoints) {
+    if (currentPoints >= 1000) return 'You\'re in the top 10% of eco-conscious users!';
+    if (currentPoints >= 500) return 'You\'re above average in environmental impact!';
+    if (currentPoints >= 100) return 'You\'re making solid progress on your eco journey!';
+    return 'Great start! Every sustainable choice makes a difference.';
+  }
+
+  getMotivationalMessage(currentTier, orderCount) {
+    if (orderCount === 0) return 'Ready to start your sustainability journey? Your first eco-purchase awaits!';
+    if (currentTier === 'Planet Guardian') return 'Amazing work! You\'re a true environmental champion!';
+    return 'Keep up the fantastic work! Every purchase brings positive change.';
+  }
+
+  getRecommendations(userProfile, recentActivity) {
+    const recs = [];
+    
+    if ((userProfile.totalWaterSaved || 0) < 50) {
+      recs.push({
+        type: 'product',
+        title: 'Water-Saving Products',
+        description: 'Explore products that help conserve water resources',
+        expectedImpact: '+30 impact points, 25L water saved',
+        priority: 'high'
+      });
+    }
+    
+    if ((recentActivity?.orderCount || 0) === 0) {
+      recs.push({
+        type: 'habit',
+        title: 'Start Your Eco Journey',
+        description: 'Make your first sustainable purchase this week',
+        expectedImpact: '+50 impact points, tier progress',
+        priority: 'high'
+      });
+    }
+    
+    recs.push({
+      type: 'goal',
+      title: 'Monthly Impact Goal',
+      description: 'Aim for 100 additional impact points this month',
+      expectedImpact: 'Tier advancement, new rewards',
+      priority: 'medium'
+    });
+    
+    return recs;
+  }
+
+  getNearbyBadges(userProfile) {
+    const badges = [];
+    
+    const waterSaved = userProfile.totalWaterSaved || 0;
+    if (waterSaved < 100) {
+      badges.push({
+        name: 'Water Guardian',
+        description: 'Save 100 liters of water',
+        requirement: '100L water saved',
+        progress: Math.min(waterSaved, 100)
+      });
+    }
+    
+    const carbonSaved = userProfile.totalCarbonSaved || 0;
+    if (carbonSaved < 10) {
+      badges.push({
+        name: 'Carbon Saver',
+        description: 'Prevent 10kg of CO2 emissions',
+        requirement: '10kg CO2 saved',
+        progress: Math.min(carbonSaved * 10, 100)
+      });
+    }
+    
+    return badges;
   }
 
   /**

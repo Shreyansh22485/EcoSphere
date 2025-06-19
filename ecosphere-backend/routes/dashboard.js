@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const Order = require('../models/Order');
 const { protect } = require('../middleware/auth');
+const geminiAI = require('../services/geminiAI');
 
 // Get user dashboard data
 router.get('/stats', protect, async (req, res) => {
@@ -174,8 +175,43 @@ router.get('/stats', protect, async (req, res) => {
         description: "Referred 25+ new EcoSphere users", 
         earned: (user.achievements?.referralCount || 0) >= 25,
         date: (user.achievements?.referralCount || 0) >= 25 ? new Date().toLocaleDateString() : null
-      }
-    ];
+      }    ];
+
+    // Get recent activity for AI forecast
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const recentOrders = await Order.find({ 
+      customer: userId,
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+
+    const recentActivity = {
+      orderCount: recentOrders.length,
+      totalSpent: recentOrders.reduce((sum, order) => sum + order.orderSummary.total, 0),
+      avgEcoScore: recentOrders.length > 0 
+        ? recentOrders.reduce((sum, order) => {
+            const orderAvg = order.orderItems.reduce((itemSum, item) => 
+              itemSum + (item.ecoScore || 0), 0) / order.orderItems.length;
+            return sum + orderAvg;
+          }, 0) / recentOrders.length
+        : 0,
+      recentPointsGrowth: recentOrders.reduce((sum, order) => 
+        sum + (order.totalImpact?.impactPoints || 0), 0)
+    };
+
+    // Generate AI-powered impact forecast
+    let aiForecast = null;
+    try {
+      aiForecast = await geminiAI.generateImpactForecast(
+        user.toObject(),
+        recentActivity,
+        '12months'
+      );
+    } catch (error) {
+      console.error('Failed to generate AI forecast:', error);
+      // Continue without AI forecast - will use simple projectedImpact fallback
+    }
 
     res.json({
       success: true,
@@ -196,6 +232,8 @@ router.get('/stats', protect, async (req, res) => {
         tierData,
         monthlyData: monthlyTrend,
         achievementBadges,
+        // Enhanced AI forecast data
+        aiForecast: aiForecast || null,
         projectedImpact: {
           annualCO2: Math.round(user.totalCarbonSaved * 12), // Rough projection
           annualWater: Math.round(user.totalWaterSaved * 12),
