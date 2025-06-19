@@ -24,8 +24,13 @@ const {
 const { protect } = require('../middleware/auth');
 
 // Public routes
-router.get('/', getGroups);
+router.get('/', getGroups); 
 router.get('/:id', getGroup);
+
+// Public group information routes (no auth required)
+router.get('/:id/members', getGroupMembers);
+router.get('/:id/stats', getGroupStats);
+router.get('/:id/group-buys', getGroupBuys);
 
 // Protected routes - require authentication
 router.use(protect);
@@ -43,7 +48,6 @@ router.post('/:id/join', joinGroup);
 router.post('/:id/leave', leaveGroup);
 
 // Member management
-router.get('/:id/members', getGroupMembers);
 router.put('/:id/members/:memberId/role', updateMemberRole);
 router.delete('/:id/members/:memberId', removeMember);
 
@@ -59,7 +63,7 @@ router.post('/:id/requests/:requestId/reject', (req, res, next) => {
 });
 
 // Group analytics
-router.get('/:id/stats', getGroupStats);
+// (moved to public section above)
 
 // Group challenges and goals
 router.post('/:id/challenges', createGroupChallenge);
@@ -82,7 +86,6 @@ router.post('/:id/group-buy/join', joinGroupBuy);
 router.post('/:id/group-buy/leave', leaveGroupBuy);
 
 // Group Buying routes
-router.get('/:id/group-buys', getGroupBuys);
 router.post('/:id/group-buys', startGroupBuy);
 router.post('/:id/group-buys/:groupBuyId/join', joinGroupBuy);
 router.post('/:id/group-buys/:groupBuyId/leave', leaveGroupBuy);

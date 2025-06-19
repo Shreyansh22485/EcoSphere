@@ -537,7 +537,7 @@ const handleJoinRequest = asyncHandler(async (req, res) => {
 /**
  * @desc    Get group members
  * @route   GET /api/groups/:id/members
- * @access  Private (Members only)
+ * @access  Public
  */
 const getGroupMembers = asyncHandler(async (req, res) => {
   const group = await Group.findById(req.params.id)
@@ -548,22 +548,10 @@ const getGroupMembers = asyncHandler(async (req, res) => {
     return res.status(404).json({
       success: false,
       message: 'Group not found'
-    });  }
-  
-  // Check if user is a member (filter out null/deleted users)
-  const isMember = group.members.some(member => 
-    member.user && member.user._id && member.user._id.toString() === req.user.id.toString()
-  );
-  
-  if (!isMember) {
-    return res.status(403).json({
-      success: false,
-      message: 'Access denied. Members only.'
     });
   }
-  
-  // Filter out members with null users before returning
-  const validMembers = group.members.filter(member => member.user && member.user._id);
+
+  // Filter out members with null users before returning  const validMembers = group.members.filter(member => member.user && member.user._id);
   
   res.status(200).json({
     success: true,
@@ -734,8 +722,7 @@ const getUserGroups = asyncHandler(async (req, res) => {  const groups = await G
 
 /**
  * @desc    Get group stats/analytics
- * @route   GET /api/groups/:id/stats
- * @access  Private (Members only)
+ * @route   GET /api/groups/:id/stats * @access  Public
  */
 const getGroupStats = asyncHandler(async (req, res) => {
   const group = await Group.findById(req.params.id)
@@ -747,18 +734,7 @@ const getGroupStats = asyncHandler(async (req, res) => {
       message: 'Group not found'
     });
   }
-    // Check if user is a member (filter out null/deleted users)
-  const isMember = group.members.some(member => 
-    member.user && member.user._id && member.user._id.toString() === req.user.id.toString()
-  );
-  
-  if (!isMember) {
-    return res.status(403).json({
-      success: false,
-      message: 'Access denied. Members only.'
-    });
-  }
-  
+
   // Calculate member stats (filter out members with null users)
   const validMembers = group.members.filter(member => member.user && member.user._id);
   const memberStats = validMembers.map(member => ({
@@ -1068,7 +1044,7 @@ async function _completeGroupChallenge(group, challenge) {
 /**
  * @desc    Get group buys for a group
  * @route   GET /api/groups/:id/group-buys
- * @access  Private (Members only)
+ * @access  Public
  */
 const getGroupBuys = asyncHandler(async (req, res) => {
   const { productId } = req.query;
@@ -1083,19 +1059,7 @@ const getGroupBuys = asyncHandler(async (req, res) => {
       message: 'Group not found'
     });
   }
-  
-  // Check if user is a member
-  const isMember = group.members.some(member => 
-    member.user.toString() === req.user.id.toString()
-  );
-  
-  if (!isMember) {
-    return res.status(403).json({
-      success: false,
-      message: 'Access denied. Members only.'
-    });
-  }
-  
+
   let groupBuys = group.groupBuying.activeOrders;
   
   // Filter by product if specified
