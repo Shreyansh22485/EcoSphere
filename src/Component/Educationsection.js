@@ -1,9 +1,87 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../Css/Educationsection.css";
 import { Link } from "react-router-dom";
+import { generateQuizQuestions, testGeminiConnection } from "../services/quizService";
 
 function Educationsection() {
   const [activeIndex, setActiveIndex] = useState(null);
+  const [activeQuiz, setActiveQuiz] = useState(null);
+  const [quizScore, setQuizScore] = useState(0);
+  const [quickQuizzes, setQuickQuizzes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiStatus, setApiStatus] = useState(null);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+
+  // Refs for smooth scrolling
+  const coursesRef = useRef(null);
+  const docsRef = useRef(null);
+  const quizRef = useRef(null);
+
+  useEffect(() => {
+    const initializeQuiz = async () => {
+      try {
+        // First test the API connection
+        const testResult = await testGeminiConnection();
+        setApiStatus(testResult);
+        
+        if (testResult.success) {
+          // If API test is successful, fetch quiz questions
+          setIsLoading(true);
+          const questions = await generateQuizQuestions();
+          setQuickQuizzes(questions);
+        } else {
+          console.error('API Test Failed:', testResult.message);
+          // Use fallback questions if API test fails
+          setQuickQuizzes([
+            {
+              question: "What is the primary goal of EcoSphere?",
+              options: [
+                "To increase Amazon's profits",
+                "To promote eco-friendly shopping and reduce environmental impact",
+                "To compete with other e-commerce platforms",
+                "To reduce shipping costs"
+              ],
+              correctAnswer: 1
+            },
+            {
+              question: "Which of these is NOT a criterion for eco-friendly certification?",
+              options: [
+                "Carbon emissions",
+                "Material sourcing",
+                "Product popularity",
+                "Recyclability"
+              ],
+              correctAnswer: 2
+            },
+            {
+              question: "What is the purpose of the box return system?",
+              options: [
+                "To reduce shipping costs",
+                "To promote zero waste and recycling",
+                "To speed up delivery",
+                "To increase customer satisfaction"
+              ],
+              correctAnswer: 1
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error("Error initializing quiz:", error);
+        setApiStatus({
+          success: false,
+          message: error.message
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeQuiz();
+  }, []);
+
+  const scrollToSection = (ref) => {
+    ref.current.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const faqItems = [
     {
@@ -30,6 +108,45 @@ function Educationsection() {
     },
   ];
 
+  const educationalResources = [
+    {
+      title: "EcoSphere Documentation",
+      description: "Comprehensive guides and documentation about sustainable practices",
+      icon: "📚",
+      categories: [
+        "Getting Started",
+        "Best Practices",
+        "Certification Process",
+        "Sustainability Guidelines"
+      ],
+      ref: docsRef
+    },
+    {
+      title: "Expert-Led Courses",
+      description: "Access our curated courses on sustainability and eco-friendly practices",
+      icon: "🎓",
+      categories: [
+        "Sustainable Shopping",
+        "Waste Reduction",
+        "Eco-Friendly Living",
+        "Green Technology"
+      ],
+      ref: coursesRef
+    },
+    {
+      title: "Interactive Learning",
+      description: "Engage with interactive content and test your knowledge",
+      icon: "✍️",
+      categories: [
+        "Quizzes",
+        "Case Studies",
+        "Interactive Guides",
+        "Progress Tracking"
+      ],
+      ref: quizRef
+    }
+  ];
+
   const handleItemClick = (index) => {
     if (index === activeIndex) {
       // Clicking the active item again will close it
@@ -44,110 +161,186 @@ function Educationsection() {
     window.scrollTo(0, 0, { behavior: "instant" });
   };
 
+  const handleQuizSubmit = (quizIndex, selectedAnswer) => {
+    const isCorrect = selectedAnswer === quickQuizzes[quizIndex].correctAnswer;
+    if (isCorrect) {
+      setQuizScore(prev => prev + 1);
+    }
+    setActiveQuiz(quizIndex);
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [quizIndex]: selectedAnswer
+    }));
+  };
+
+  const courses = [
+    {
+      title: "Sustainable Shopping 101",
+      instructor: "Dr. Sarah Green",
+      duration: "4 weeks",
+      level: "Beginner",
+      description: "Learn the fundamentals of sustainable shopping and making eco-friendly choices."
+    },
+    {
+      title: "Advanced Waste Reduction",
+      instructor: "Prof. Michael Brown",
+      duration: "6 weeks",
+      level: "Intermediate",
+      description: "Deep dive into waste reduction techniques and sustainable practices."
+    },
+    {
+      title: "Green Technology Integration",
+      instructor: "Dr. Lisa Chen",
+      duration: "8 weeks",
+      level: "Advanced",
+      description: "Explore cutting-edge green technologies and their implementation."
+    }
+  ];
+
+  const documentation = [
+    {
+      title: "Getting Started Guide",
+      category: "Basics",
+      description: "Essential information for new users of EcoSphere",
+      link: "/docs/getting-started"
+    },
+    {
+      title: "Certification Process",
+      category: "Process",
+      description: "Detailed guide on how products get certified as eco-friendly",
+      link: "/docs/certification"
+    },
+    {
+      title: "Best Practices",
+      category: "Guidelines",
+      description: "Recommended practices for sustainable shopping",
+      link: "/docs/best-practices"
+    }
+  ];
+
   return (
-    <>
-      <div className="bar">
-        <img src="../images/education_bar_image.png" alt="" />
-        <ul>
-          <li>
-            <a href="/green">Home</a>
-          </li>
-          <li>
-            <a href="#EcoCertification">Certificates</a>
-          </li>
-          <li>
-            <a href="#FAQ">FAQS</a>
-          </li>
-        </ul>
+    <div className="education-container">
+      <div className="education-header">
+        <h1>EcoSphere Learning Center</h1>
+        <p>Expand your knowledge about sustainable practices and eco-friendly living</p>
       </div>
 
-      <div className="midse">
-        <h1>Zero Waste Production through Return Box System</h1>
-        <br />
-        <p>
-          Our solution leverages Amazon's existing infrastructure for recycling
-          boxes from returned products. When enough customers choose the "return
-          box" option and a specific region exceeds a set box threshold,
-          scheduled pickups are arranged. Customers receive notifications via
-          the app, website, or SMS/email. Pickup frequency varies by
-          participation. Additionally, post-product delivery, customers can
-          return packaging boxes, promoting sustainability in e-commerce.
-        </p>
-
-        <video width="750" height="500" autoPlay loop>
-          <source src="../images/food_delivery.mp4" type="video/mp4" />
-        </video>
+      <div className="education-grid">
+        {educationalResources.map((resource, index) => (
+          <div key={index} className="education-card">
+            <div className="card-header">
+              <span className="resource-icon">{resource.icon}</span>
+              <h2>{resource.title}</h2>
+            </div>
+            <p className="card-description">{resource.description}</p>
+            <div className="card-categories">
+              {resource.categories.map((category, catIndex) => (
+                <span key={catIndex} className="category-tag">{category}</span>
+              ))}
+            </div>
+            <button 
+              onClick={() => scrollToSection(resource.ref)}
+              className="card-link"
+            >
+              Explore {resource.title}
+            </button>
+          </div>
+        ))}
       </div>
 
-      <div className="leftse">
-        <video width="750" height="500" autoPlay loop>
-          <source src="../images/foldbox.mp4" type="video/mp4" />
-        </video>
-
-        <h1>How to Fold a Box?</h1>
-        <p>
-          Folding a box for convenient storage and future use is a practical
-          skill. Start by laying the box flat on a clean, flat surface. Look for
-          the creased lines on the cardboard, usually marked for easy folding.
-          Gently fold along these lines to bring the sides of the box up,
-          forming the walls. Then, fold in the bottom flaps to create the base.
-          Ensure all edges are aligned neatly for a secure fit. To flatten the
-          box, simply reverse these steps, gently folding it back into a flat
-          shape. The attached video provides a visual guide, making the process
-          even simpler. This way, you can keep your box handy for the next time
-          you need it, ensuring easy and efficient storage.
-        </p>
-      </div>
-      <div className="complete">
-        <div className="Certificate" id="EcoCertification">
-          <img
-            src="../images/Eco Friendly Badge Certifications.png"
-            alt=""
-            width="100%"
-          />
+      <div ref={docsRef} className="documentation-section">
+        <div className="section-header">
+          <h2>Documentation & Guides</h2>
+          <p>Comprehensive resources to help you understand EcoSphere better</p>
         </div>
-
-        <div class="smallcer">
-          <img src="../images/edu1.png" alt="" width="100%" />
-        </div>
-        <div class="largecer">
-          <img src="../images/edu2.png" alt="" width="100%" />
-        </div>
-
-        <img
-          src="../images/edu3.png"
-          alt=""
-          width="100%"
-          className="shopprod"
-        />
-
-        <div className="FaqEdu" id="FAQ">
-          <h1>Frequently Asked Questions</h1>
-          {faqItems.map((item, index) => (
-            <div key={index} className="FaqItem">
-              <div
-                className="FaqQuestion"
-                onClick={() => handleItemClick(index)}
-              >
-                <div>{item.question}</div>
-                <span className="AccordionIcon">
-                  {activeIndex === index ? "-" : "+"}
-                </span>
-              </div>
-              {activeIndex === index && (
-                <div className="FaqAnswer">{item.answer}</div>
-              )}
+        <div className="docs-grid">
+          {documentation.map((doc, index) => (
+            <div key={index} className="doc-card">
+              <span className="doc-category">{doc.category}</span>
+              <h3>{doc.title}</h3>
+              <p>{doc.description}</p>
+              <Link to={doc.link} className="doc-link">Read More</Link>
             </div>
           ))}
         </div>
+      </div>
 
-        <div className="ecofriendimg">
-          <Link style={{ textDecoration: "none" }} to="/green" onClick={handleLinkClick}>
-            <img src="../images/shop eco frinedly.png" alt="" width="100%" />
-          </Link>
+      <div ref={coursesRef} className="courses-section">
+        <div className="section-header">
+          <h2>Expert-Led Courses</h2>
+          <p>Learn from industry experts about sustainability and eco-friendly practices</p>
+        </div>
+        <div className="courses-grid">
+          {courses.map((course, index) => (
+            <div key={index} className="course-card">
+              <div className="course-header">
+                <h3>{course.title}</h3>
+                <span className="course-level">{course.level}</span>
+              </div>
+              <div className="course-details">
+                <p className="instructor">Instructor: {course.instructor}</p>
+                <p className="duration">Duration: {course.duration}</p>
+              </div>
+              <p className="course-description">{course.description}</p>
+              <button className="enroll-button">Enroll Now</button>
+            </div>
+          ))}
         </div>
       </div>
-    </>
+
+      <div ref={quizRef} className="knowledge-check-section">
+        <div className="section-header">
+          <h2>Test Your Knowledge</h2>
+          <p>Take our quick quiz to assess your understanding of eco-friendly practices</p>
+          {apiStatus && !apiStatus.success && (
+            <div className="api-error-message">
+              <p>Note: Using fallback questions due to API connection issue: {apiStatus.message}</p>
+            </div>
+          )}
+        </div>
+        
+        <div className="quiz-container">
+          {isLoading ? (
+            <div className="quiz-loading">
+              <div className="loading-spinner"></div>
+              <p>Generating quiz questions...</p>
+            </div>
+          ) : (
+            quickQuizzes.map((quiz, index) => (
+              <div key={index} className="quiz-card">
+                <div className="quiz-header">
+                  <h3>Question {index + 1}</h3>
+                  {activeQuiz === index && (
+                    <span className={`quiz-feedback ${selectedAnswers[index] === quiz.correctAnswer ? 'correct' : 'incorrect'}`}>
+                      {selectedAnswers[index] === quiz.correctAnswer ? "✓ Correct!" : "✗ Incorrect"}
+                    </span>
+                  )}
+                </div>
+                <p className="quiz-question">{quiz.question}</p>
+                <div className="quiz-options">
+                  {quiz.options.map((option, optionIndex) => (
+                    <button
+                      key={optionIndex}
+                      className={`quiz-option ${
+                        activeQuiz === index && optionIndex === quiz.correctAnswer
+                          ? 'correct'
+                          : activeQuiz === index && optionIndex === selectedAnswers[index]
+                          ? 'incorrect'
+                          : ''
+                      }`}
+                      onClick={() => handleQuizSubmit(index, optionIndex)}
+                      disabled={activeQuiz === index}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
