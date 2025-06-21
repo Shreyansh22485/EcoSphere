@@ -21,17 +21,16 @@ function Product({ title, image, id, price, rating, ecoscore }) {
       },
     });
   };
-
   return (
-    <div className="product">
-      <div className="product__bestseller">BESTSELLER</div>
-      <div className="product__info">
+    <div className="std-product">
+      <div className="std-product__bestseller">BESTSELLER</div>
+      <div className="std-product__info">
         <p>{title}</p>
-        <div className="product__price">
+        <div className="std-product__price">
           <small>$</small>
           <strong>{price}</strong>
         </div>
-        <div className="product__rating">
+        <div className="std-product__rating">
           {Array(rating)
             .fill()
             .map((rate) => (

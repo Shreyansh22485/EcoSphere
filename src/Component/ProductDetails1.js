@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../Css/ProductDetails.css";
+import "../Css/ProductDetails1.css";
 import { TbTruckDelivery } from "react-icons/tb";
 import { FaAmazonPay } from "react-icons/fa";
 import { GiCheckedShield, GiLaurelsTrophy } from "react-icons/gi";
@@ -34,42 +34,40 @@ function ProductDetails1() {
   const handleImageClick = (image) => {
     setSelectedImage(image);
   };
-
   return (
-    <div className="whole">
-      <div className="img">
-        <div className="image-slider">
-          <div className="image-thumbnails">
+    <div className="std-details-whole">
+      <div className="std-details-img">
+        <div className="std-details-image-slider">
+          <div className="std-details-image-thumbnails">
             {imageArray.map((image, index) => (
               <img
                 key={index}
                 src={image}
                 alt={`Image ${index}`}
-                className={`thumbnail ${
-                  selectedImage === image ? "selected" : ""
+                className={`std-details-thumbnail ${
+                  selectedImage === image ? "std-details-selected" : ""
                 }`}
                 onClick={() => handleImageClick(image)}
               />
             ))}
           </div>
         </div>
-        <div className="large-image">
+        <div className="std-details-large-image">
           {selectedImage && <img src={selectedImage} alt="Selected Image" />}
         </div>
       </div>
 
-      <div className="img-desc">
+      <div className="std-details-img-desc">
         <h2>
           Jutify Eco-Friendly Printed Unisex Canvas Shopping Bag, Women's Tote
           Bag | Spacious, Stylish, Sturdy Handbag
-        </h2>
-        <p>⭐⭐⭐⭐ ( 63 reviews )</p>
+        </h2>        <p>⭐⭐⭐⭐ ( 63 reviews )</p>
         <br></br>
-        <p className="price">
-          <span className="discounted-price">$13.96</span>
-          <span className="original-price">$19.95</span>
+        <p className="std-details-price">
+          <span className="std-details-discounted-price">$13.96</span>
+          <span className="std-details-original-price">$19.95</span>
         </p>
-        <br></br>        <div className="eco_details">
+        <br></br>        <div className="std-details-eco_details">
           <div style={{
             backgroundColor: "#fff3e0",
             padding: "20px",
@@ -138,38 +136,37 @@ function ProductDetails1() {
           small essentials. Regular cleaning is recommended to maintain their
           quality. Jutify is dedicated to producing high-quality jute and cotton
           bags, setting the standard for quality in the industry.
-        </p>
-        <br></br>
-        <div className="icons">
-          <div className="icon">
-            <img src="../images/8.png" className="i" />
+        </p>        <br></br>
+        <div className="std-details-icons">
+          <div className="std-details-icon">
+            <img src="../images/8.png" className="std-details-i" />
             <p>Free Delivery</p>
           </div>
 
-          <div className="icon">
-            <img src="../images/9.png" className="i" />
+          <div className="std-details-icon">
+            <img src="../images/9.png" className="std-details-i" />
             <p>Accept Amazon Pay</p>
           </div>
 
-          <div className="icon">
-            <img src="../images/10.png" className="i" />
+          <div className="std-details-icon">
+            <img src="../images/10.png" className="std-details-i" />
             <p>2-year warranty</p>
           </div>
 
-          <div className="icon">
-            <img src="../images/11.png" className="i" />
+          <div className="std-details-icon">
+            <img src="../images/11.png" className="std-details-i" />
             <p>Top Brand</p>
           </div>
         </div>
 
-        <div className="product-data-info">
+        <div className="std-details-product-data-info">
           <p>
             Available: <span style={{ color: "green" }}> In Stock</span>
           </p>
         </div>
         <br />
         <br />        <button
-          className="addtocart"
+          className="std-details-addtocart"
           style={{
             backgroundColor: "#ff5722",
             color: "white",
