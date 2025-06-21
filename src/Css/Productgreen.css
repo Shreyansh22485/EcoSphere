@@ -15,7 +15,7 @@
   box-shadow: 0 8px 25px rgba(76, 175, 80, 0.1);
   transition: all 0.3s ease;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   z-index: revert;
 }
 
@@ -176,6 +176,8 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  position: relative;
+  overflow: visible;
 }
 
 .carbon_details {
@@ -222,6 +224,8 @@
   transition: all 0.3s ease;
   margin-top: 0;
   min-height: 40px;
+  position: relative;
+  z-index: 999;
 }
 
 .badge_details:hover {
@@ -260,6 +264,7 @@
   overflow: hidden !important;
   min-width: 80px !important;
   text-align: center !important;
+  z-index: 1001 !important;
 }
 
 .ecoscore_display::before {
@@ -396,18 +401,22 @@
   align-items: center;
   gap: 12px;
   flex: 1;
+  z-index: 1000;
 }
 
 .popover_content {
   position: absolute;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
-  transform: translate(10%, -110%);
+  background: #ffffff;
+  transform: translate(-50%, -100%);
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
-  border: 2px solid #e8f5e8;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 0 3px #4CAF50;
+  border: 3px solid #4CAF50;
   display: none;
-  z-index: 10;
+  z-index: 999999;
   min-width: 280px;
+  max-width: 320px;
+  top: -20px;
+  left: 50%;
 }
 
 .popover_content .content {
@@ -446,8 +455,14 @@
 }
 
 @keyframes fadeInPopover {
-  from { opacity: 0; transform: translate(10%, -110%) scale(0.95); }
-  to { opacity: 1; transform: translate(10%, -110%) scale(1); }
+  from { 
+    opacity: 0; 
+    transform: translate(-50%, -100%) scale(0.9); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translate(-50%, -100%) scale(1); 
+  }
 }
 
 .badge_info_popover_content_nav {
@@ -503,6 +518,49 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
   background: linear-gradient(135deg, #45a049, #388e3c);
+}
+
+/* Portal tooltip styles */
+.portal-tooltip {
+  animation: fadeInPortalTooltip 0.3s ease;
+  pointer-events: none;
+}
+
+.portal-tooltip-content {
+  position: relative;
+  animation: slideInPortalTooltip 0.3s ease;
+}
+
+.portal-tooltip-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid #4CAF50;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes fadeInPortalTooltip {
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
+  }
+}
+
+@keyframes slideInPortalTooltip {
+  from { 
+    transform: scale(0.9) translateY(10px); 
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1) translateY(0); 
+    opacity: 1;
+  }
 }
 
 /* Responsive design */
