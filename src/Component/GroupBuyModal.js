@@ -84,18 +84,17 @@ const GroupBuyModal = ({ product, isOpen, onClose, onJoinGroupBuy }) => {
   };
 
   if (!isOpen) return null;
-
   if (!isAuthenticated) {
     return (
-      <div className="group-buy-modal-overlay" onClick={onClose}>
-        <div className="group-buy-modal" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
+      <div className="gbm-group-buy-modal-overlay" onClick={onClose}>
+        <div className="gbm-group-buy-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="gbm-modal-header">
             <h3>🔒 Login Required</h3>
-            <button className="close-btn" onClick={onClose}>×</button>
+            <button className="gbm-close-btn" onClick={onClose}>×</button>
           </div>
-          <div className="modal-content">
+          <div className="gbm-modal-content">
             <p>Please log in to participate in group buying.</p>
-            <button className="login-btn" onClick={() => window.location.href = '/login'}>
+            <button className="gbm-login-btn" onClick={() => window.location.href = '/login'}>
               Go to Login
             </button>
           </div>
@@ -103,31 +102,30 @@ const GroupBuyModal = ({ product, isOpen, onClose, onJoinGroupBuy }) => {
       </div>
     );
   }
-
   return (
-    <div className="group-buy-modal-overlay" onClick={onClose}>
-      <div className="group-buy-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
+    <div className="gbm-group-buy-modal-overlay" onClick={onClose}>
+      <div className="gbm-group-buy-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="gbm-modal-header">
           <h3>🛒 Join Group Buy - {product.name}</h3>
-          <button className="close-btn" onClick={onClose}>×</button>
+          <button className="gbm-close-btn" onClick={onClose}>×</button>
         </div>
         
-        <div className="modal-content">
+        <div className="gbm-modal-content">
           {loading ? (
-            <div className="loading">Loading your groups...</div>
+            <div className="gbm-loading">Loading your groups...</div>
           ) : userGroups.length === 0 ? (
-            <div className="no-groups">
+            <div className="gbm-no-groups">
               <p>🏘️ You need to join a group first to participate in group buying!</p>
               <button 
-                className="join-group-btn" 
+                className="gbm-join-group-btn" 
                 onClick={() => window.location.href = '/groups'}
               >
                 Browse Groups
               </button>
             </div>
           ) : (
-            <div className="group-buys-container">
-              <div className="quantity-selector">
+            <div className="gbm-group-buys-container">
+              <div className="gbm-quantity-selector">
                 <label>Quantity:</label>
                 <input 
                   type="number" 
@@ -139,19 +137,19 @@ const GroupBuyModal = ({ product, isOpen, onClose, onJoinGroupBuy }) => {
 
               <h4>Your Groups:</h4>
               {activeGroupBuys.map(({ groupId, groupName, groupBuys }) => (
-                <div key={groupId} className="group-section">
+                <div key={groupId} className="gbm-group-section">
                   <h5>🏘️ {groupName}</h5>
                   
                   {groupBuys.length > 0 ? (
                     groupBuys.map((groupBuy) => (
-                      <div key={groupBuy._id} className="group-buy-item">
-                        <div className="group-buy-info">
+                      <div key={groupBuy._id} className="gbm-group-buy-item">
+                        <div className="gbm-group-buy-info">
                           <p>Progress: {groupBuy.currentQuantity}/{groupBuy.targetQuantity}</p>
                           <p>Discount: {groupBuy.discountPercent}%</p>
                           <p>Deadline: {new Date(groupBuy.deadline).toLocaleDateString()}</p>
                         </div>
                         <button 
-                          className="join-btn"
+                          className="gbm-join-btn"
                           onClick={() => handleJoinGroupBuy(groupId, groupBuy._id)}
                         >
                           Join Group Buy
@@ -159,10 +157,10 @@ const GroupBuyModal = ({ product, isOpen, onClose, onJoinGroupBuy }) => {
                       </div>
                     ))
                   ) : (
-                    <div className="no-active-buys">
+                    <div className="gbm-no-active-buys">
                       <p>No active group buys for this product</p>
                       <button 
-                        className="start-btn"
+                        className="gbm-start-btn"
                         onClick={() => handleStartGroupBuy(groupId)}
                       >
                         Start Group Buy

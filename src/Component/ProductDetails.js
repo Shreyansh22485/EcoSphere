@@ -545,13 +545,14 @@ function ProductDetails() {
           </button>
         )}
         
+        
+        </div>
         <GroupBuyModal 
           product={product}
           isOpen={showGroupBuyModal}
           onClose={() => setShowGroupBuyModal(false)}
           onJoinGroupBuy={handleGroupBuyJoin}
         />
-        </div>
       </div>
     </div>
   );
