@@ -7,7 +7,7 @@ import { useStateValue } from "../StateProvider";
 import { Link } from "react-router-dom";
 
 function ProductDetails1() {
-  const [selectedImage, setSelectedImage] = useState("../images/Bag1.png");
+  const [selectedImage, setSelectedImage] = useState("../images/leatherbag.jpg");
 
   const [{ basket }, dispatch] = useStateValue();
 
@@ -26,9 +26,7 @@ function ProductDetails1() {
   };
 
   const imageArray = [
-    "../images/Bag1.png",
-    "../images/Bag2.png",
-    "../images/Bag3.png",
+    "../images/leatherbag.jpg",
   ];
 
   const handleImageClick = (image) => {
@@ -59,8 +57,7 @@ function ProductDetails1() {
 
       <div className="std-details-img-desc">
         <h2>
-          Jutify Eco-Friendly Printed Unisex Canvas Shopping Bag, Women's Tote
-          Bag | Spacious, Stylish, Sturdy Handbag
+          Woven Bag for Women, Leather Tote Bag Large Summer Beach Travel Handbag and Purse Retro Handmade Shoulder Bag
         </h2>        <p>⭐⭐⭐⭐ ( 63 reviews )</p>
         <br></br>
         <p className="std-details-price">
@@ -191,7 +188,7 @@ function ProductDetails1() {
           }        >
           Add to Cart (-10 Impact Points)
         </button>
-          <Link to="/product" style={{textDecoration: "none"}}>
+          <Link to="/product/6851a92ff93862aaf78a9a7d" style={{textDecoration: "none"}}>
           <button
             style={{
               backgroundColor: "#4CAF50",

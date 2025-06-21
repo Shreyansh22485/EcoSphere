@@ -17,11 +17,11 @@ function Home() {
         <ImageSlider/>
 
         <div className="home__row">
-          <Productbutton
-            id="12321341"
-            title="Disposable Plastic Drinking Straws – a pack of 100 clear, BPA-free straws designed for convenience and reliability, 7.75-inch"
-            price={7.50}            rating={3}
-            image="../images/straw.jpg"
+          <Productbutton1
+            id="958462"
+            title="Woven Bag for Women, Leather Tote Bag Large Summer Beach Travel Handbag and Purse Retro Handmade Shoulder Bag"
+            price={19.99}            rating={5}
+            image="../images/leatherbag.jpg"
             ecoscore={0}
           />
           <Product
@@ -48,13 +48,7 @@ function Home() {
             image="../images/echo.jpg"
             ecoscore={0}
           />
-          <Productbutton1
-            id="958462"
-            title="Woven Bag for Women, Leather Tote Bag Large Summer Beach Travel Handbag and Purse Retro Handmade Shoulder Bag"
-            price={19.99}            rating={5}
-            image="../images/leatherbag.jpg"
-            ecoscore={0}
-          />
+          
         </div>
 
         <div className="home__row">
