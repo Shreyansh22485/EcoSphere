@@ -87,19 +87,20 @@ function Product({ title, image, id, price, rating, carbon_red, ecoscore, aiInsi
   }, []);
   return (
     <div className="productg">
-      <div className="product__bestseller">🌿 ECO BESTSELLER</div>
-      <div className="product__info">
+      <div className="product__bestseller">🌿 ECO BESTSELLER</div>      <div className="product__info">
         <p>{title}</p>
         <div className="product__price">
-          <small>$</small>
-          <strong>{price}</strong>
-        </div>
-        <div className="product__rating">
-          {Array(rating)
-            .fill()
-            .map((_, index) => (
-              <p key={index}>⭐</p>
-            ))}
+          <div className="price-amount">
+            <small>$</small>
+            <strong>{price}</strong>
+          </div>
+          <div className="product__rating">
+            {Array(rating)
+              .fill()
+              .map((_, index) => (
+                <p key={index}>⭐</p>
+              ))}
+          </div>
         </div>
       </div>
       <img src={image} alt={title} />
