@@ -536,19 +536,17 @@ const GroupDetail = () => {
                             ></div>
                           </div>
                           <span className="progress-percentage">{Math.round(progressPercentage)}%</span>
-                        </div>
-
-                        <div className="progress-stats">
-                          <div className="stat">
+                        </div>                        <div className="progress-stats">
+                          <div className="stat stat-participants">
                             <span className="stat-icon">👥</span>
                             <span>{totalParticipants} participants</span>
                           </div>
-                          <div className="stat">
+                          <div className="stat stat-total-items">
                             <span className="stat-icon">📋</span>
                             <span>{totalItems} total items</span>
                           </div>
                           {daysLeft !== null && (
-                            <div className="stat">
+                            <div className={`stat stat-days-left ${daysLeft <= 3 ? 'urgent' : ''}`}>
                               <span className="stat-icon">⏰</span>
                               <span className={daysLeft <= 3 ? 'urgent' : ''}>
                                 {daysLeft > 0 ? `${daysLeft} days left` : 'Expired'}
