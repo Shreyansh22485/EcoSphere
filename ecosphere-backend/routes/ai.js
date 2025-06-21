@@ -7,7 +7,8 @@ const {
   getProductComparison,
   getEducationalContent,
   getCollectiveImpactMessage,
-  debugGeminiConnection
+  debugGeminiConnection,
+  getSustainabilityQuiz
 } = require('../controllers/aiController');
 
 // Debug/Testing routes
@@ -17,6 +18,10 @@ router.get('/debug', debugGeminiConnection);
 router.get('/collective-impact', getCollectiveImpactMessage);
 router.get('/education/:topic', getEducationalContent);
 router.get('/product-comparison/:productId', getProductComparison);
+
+// New educational routes
+router.post('/educational-content', getEducationalContent);
+router.post('/sustainability-quiz', getSustainabilityQuiz);
 
 // User-specific routes (support both authenticated and query-based access for testing)
 router.get('/recommendations', getProductRecommendations);

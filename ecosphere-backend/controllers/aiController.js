@@ -300,8 +300,23 @@ const getProductComparison = asyncHandler(async (req, res) => {
  * @access  Public
  */
 const getEducationalContent = asyncHandler(async (req, res) => {
-  const { topic } = req.params;
-  const { level = 'beginner' } = req.query;
+  // Handle both GET (with params) and POST (with body) requests
+  let topic, level;
+  
+  if (req.method === 'GET') {
+    topic = req.params.topic;
+    level = req.query.level || 'beginner';
+  } else {
+    topic = req.body.topic;
+    level = req.body.userLevel || req.body.level || 'beginner';
+  }
+  
+  if (!topic) {
+    return res.status(400).json({
+      success: false,
+      message: 'Topic is required for educational content generation'
+    });
+  }
 
   try {
     const content = await geminiAI.generateEducationalContent(topic, level);
@@ -311,7 +326,7 @@ const getEducationalContent = asyncHandler(async (req, res) => {
       data: {
         topic,
         level,
-        content,
+        ...content,
         generatedAt: new Date().toISOString()
       }
     });
@@ -433,6 +448,44 @@ const debugGeminiConnection = asyncHandler(async (req, res) => {
   }
 });
 
+/**
+ * @desc    Generate AI-powered sustainability quiz
+ * @route   POST /api/ai/sustainability-quiz
+ * @access  Public
+ */
+const getSustainabilityQuiz = asyncHandler(async (req, res) => {
+  const { topic, difficulty = 'medium', questionCount = 5 } = req.body;
+  
+  if (!topic) {
+    return res.status(400).json({
+      success: false,
+      message: 'Topic is required for quiz generation'
+    });
+  }
+
+  try {
+    const quiz = await geminiAI.generateSustainabilityQuiz(topic, difficulty, questionCount);
+    
+    res.status(200).json({
+      success: true,
+      data: quiz,
+      meta: {
+        topic,
+        difficulty,
+        questionCount,
+        generatedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Quiz generation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate quiz',
+      error: error.message
+    });
+  }
+});
+
 module.exports = {
   getProductRecommendations,
   getImpactForecast,
@@ -440,5 +493,6 @@ module.exports = {
   getProductComparison,
   getEducationalContent,
   getCollectiveImpactMessage,
-  debugGeminiConnection
+  debugGeminiConnection,
+  getSustainabilityQuiz
 };

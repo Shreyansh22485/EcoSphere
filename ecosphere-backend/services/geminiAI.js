@@ -1055,6 +1055,156 @@ class GeminiAIService {
       };
     }
   }
+
+  /**
+   * Generate interactive quiz about sustainability topics with impact points
+   */
+  async generateSustainabilityQuiz(topic, difficulty = 'medium', questionCount = 5) {
+    try {
+      const prompt = `
+        As a sustainability education expert for EcoSphere, create an interactive quiz about: ${topic}
+        
+        Quiz Parameters:
+        - Difficulty: ${difficulty}
+        - Number of questions: ${questionCount}
+        - Platform: EcoSphere marketplace
+        
+        Create a quiz that includes:
+        1. ${questionCount} multiple choice questions (4 options each)
+        2. Questions should test understanding of ${topic}
+        3. Include explanations for correct answers
+        4. Mix of factual and application-based questions
+        5. Impact points for correct answers (5-15 points based on difficulty)
+        
+        Format as JSON with:
+        {
+          "title": "Quiz title",
+          "description": "Brief description",
+          "totalPossiblePoints": number,
+          "questions": [
+            {
+              "id": 1,
+              "question": "Question text",
+              "options": ["A", "B", "C", "D"],
+              "correctAnswer": 0,
+              "explanation": "Why this is correct",
+              "points": number,
+              "difficulty": "easy/medium/hard"
+            }
+          ],
+          "completionBonus": number
+        }
+      `;
+
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      try {
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+      } catch (parseError) {
+        console.warn('Could not parse quiz as JSON, returning fallback quiz');
+        return this.generateFallbackQuiz(topic, difficulty, questionCount);
+      }
+      
+      return this.generateFallbackQuiz(topic, difficulty, questionCount);
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      return this.generateFallbackQuiz(topic, difficulty, questionCount);
+    }
+  }
+
+  /**
+   * Generate fallback quiz when AI fails
+   */
+  generateFallbackQuiz(topic, difficulty = 'medium', questionCount = 5) {
+    const questions = [
+      {
+        id: 1,
+        question: "What is the main goal of sustainable living?",
+        options: [
+          "To reduce environmental impact while meeting current needs",
+          "To eliminate all modern conveniences",
+          "To live completely off-grid",
+          "To only buy expensive products"
+        ],
+        correctAnswer: 0,
+        explanation: "Sustainable living aims to reduce environmental impact while still meeting our current needs without compromising future generations.",
+        points: 10,
+        difficulty: "easy"
+      },
+      {
+        id: 2,
+        question: "Which of these materials has the lowest environmental impact?",
+        options: [
+          "Virgin plastic",
+          "Recycled aluminum",
+          "New steel",
+          "Virgin paper"
+        ],
+        correctAnswer: 1,
+        explanation: "Recycled aluminum requires 95% less energy to produce compared to virgin aluminum, making it extremely eco-friendly.",
+        points: 15,
+        difficulty: "medium"
+      },
+      {
+        id: 3,
+        question: "What does 'circular economy' mean?",
+        options: [
+          "Making round products only",
+          "Recycling everything",
+          "Designing out waste and keeping materials in use",
+          "Using only renewable energy"
+        ],
+        correctAnswer: 2,
+        explanation: "A circular economy aims to eliminate waste by designing products for reuse, recycling, and regeneration.",
+        points: 20,
+        difficulty: "hard"
+      },
+      {
+        id: 4,
+        question: "Which action saves the most water in daily life?",
+        options: [
+          "Taking shorter showers",
+          "Fixing leaky faucets",
+          "Using a dishwasher efficiently",
+          "All of the above"
+        ],
+        correctAnswer: 3,
+        explanation: "All these actions contribute significantly to water conservation, with combined impact being greater than individual actions.",
+        points: 10,
+        difficulty: "easy"
+      },
+      {
+        id: 5,
+        question: "What is carbon footprint?",
+        options: [
+          "The size of your feet",
+          "Total greenhouse gas emissions from activities",
+          "Only CO2 emissions from cars",
+          "Emissions from factories only"
+        ],
+        correctAnswer: 1,
+        explanation: "Carbon footprint refers to the total amount of greenhouse gases produced directly and indirectly by human activities.",
+        points: 15,
+        difficulty: "medium"
+      }
+    ];
+
+    const selectedQuestions = questions.slice(0, questionCount);
+    const totalPoints = selectedQuestions.reduce((sum, q) => sum + q.points, 0);
+
+    return {
+      title: `${topic} Sustainability Quiz`,
+      description: `Test your knowledge about ${topic} and earn impact points!`,
+      totalPossiblePoints: totalPoints + 25,
+      questions: selectedQuestions,
+      completionBonus: 25
+    };
+  }
 }
 
 module.exports = new GeminiAIService();
