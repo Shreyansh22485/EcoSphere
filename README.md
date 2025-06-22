@@ -1,7 +1,7 @@
 ﻿# 🌍 EcoSphere - Sustainable E-commerce Platform
 ## Amazon HackOn 2025 Project
 
-![EcoSphere Banner](./public/images/greenovation_banner_crop.png)
+![EcoSphere Banner](./public/images/Ecosphere_banner_crop.png)
 
 **EcoSphere** is a revolutionary e-commerce platform that combines sustainable shopping with gamified environmental impact tracking. Built for Amazon HackOn 2025, our platform empowers consumers to make eco-conscious purchasing decisions while tracking their positive environmental impact through AI-powered analytics.
 
