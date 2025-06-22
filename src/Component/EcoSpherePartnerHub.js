@@ -150,7 +150,7 @@ function EcoSpherePartnerHub() {
         // Show success message with AI-generated EcoScore
         setTimeout(() => {
           alert(`🎉 Success! Your product has been submitted for review.\n\nAI-Generated EcoScore: ${result.data.aiAnalysis.insights.confidence ? Math.round(result.data.product.ecoScore) : 'Calculating...'}/1000\nTier: ${result.data.product.tier}\nImpact Points: ${result.data.product.impactPoints}\n\nYou'll receive an email when approved!`);
-          window.location.href = "/submitted";
+          // window.location.href = "/submitted";
         }, 1000);
       } else {
         console.error('❌ Submission failed:', result);
