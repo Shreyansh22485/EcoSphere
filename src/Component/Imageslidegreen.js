@@ -3,10 +3,8 @@ import '../Css/Imageslidegreen.css';
 
 function ImageSliderGreen() {
   const imgs = [
-    { id: 1, value: '../images/1.jpg' },
-    { id: 2, value: '../images/3.jpg' },
-    { id: 3, value: '../images/4.jpg' },
-    { id: 4, value: '../images/5.jpg' },
+    { id: 1, value: '../images/Ecosphere_banner.png' },
+    { id: 2, value: '../images/4.jpg' },
   ];
   const [val, setVal] = useState(0);
 

@@ -135,7 +135,6 @@ function Orders() {
   return (
     <div className="orders-container">
       <div className="orders-header">
-        <img className="orders-ad" src="../images/greenad.png" alt="Eco Promotion" />
         
         <div className="orders-title-section">
           <h1 className="orders-title">Your EcoSphere Orders</h1>

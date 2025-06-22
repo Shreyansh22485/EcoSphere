@@ -92,7 +92,7 @@ function Homegreen() {
           ))}
         </div>
 
-        <img src="../images/badgebanner.png" alt="" width="100%" />
+        {/* <img src="../images/badgebanner.png" alt="" width="100%" /> */}
 
         <div className="home__rowg">
           {products.slice(4, 7).map((product) => (

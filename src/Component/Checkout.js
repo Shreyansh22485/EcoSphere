@@ -65,11 +65,7 @@ function Checkout() {
 
   return (
     <div className="checkout">
-      <div className="checkout__left">
-        <Link to="/green">
-          <img className="checkout__ad" src="../images/greenad.png" alt="Eco Promotion" />
-        </Link>
-        
+      <div className="checkout__left">       
         <div>
           <h2 className="checkout__title">Your Shopping Cart</h2>
           
