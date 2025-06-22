@@ -12,14 +12,14 @@
 ### Team: **THE DETECTIVES**
 
 **Team Members:**
-- **SHREYANSH SRIVASTAV** - Full Stack Developer & AI Integration
-- **ASHUTOSH DWIVEDI** - Backend Developer & Data Analytics  
-- **NAKUL GARG** - Frontend Developer & UI/UX Design
-- **SANYAM GARG** - Frontend Developer & System Architecture
+- **SHREYANSH SRIVASTAV**
+- **ASHUTOSH DWIVEDI**   
+- **NAKUL GARG** 
+- **SANYAM GARG** 
 
 **Project Links:**
 - **Website:** [Live Demo Coming Soon]
-- **Presentation:** [PPT Link Coming Soon]
+- **Presentation:** [[PPT Link](https://drive.google.com/file/d/1UfvwpBQuYmCMzouQulJyl7wKCl87CxVU/view?usp=sharing)]
 
 ---
 
@@ -306,10 +306,6 @@ npm run dev
 npm start
 ```
 
-### 🌐 Application URLs
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:5000
-- **API Documentation**: http://localhost:5000/api/docs
 
 ---
 
@@ -323,25 +319,9 @@ npm start
 
 ### AI-Powered Insights
 - **Product Analysis**: Comprehensive sustainability scoring
-- **User Behavior**: Personalized recommendations and forecasting
+- **User Behavior**: Personalized forecasting
 - **Community Trends**: Collective impact analysis
 - **Educational Content**: Adaptive learning experiences
-
----
-
-## 🤝 Contributing
-
-We welcome contributions to EcoSphere! Please see our contributing guidelines for:
-- Code style and standards
-- Pull request process
-- Issue reporting
-- Feature suggestions
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -352,15 +332,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **MongoDB** for robust data management
 - **React Community** for excellent development tools
 - **Environmental Organizations** for sustainability insights and guidance
-
----
-
-## 📞 Contact
-
-**Team: THE DETECTIVES**
-- 📧 Email: [team-email@example.com]
-- 🌐 Website: [portfolio-link]
-- 💼 LinkedIn: [team-linkedin]
 
 ---
 
