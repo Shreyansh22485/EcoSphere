@@ -38,10 +38,10 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 ## 🚀 Platform Walkthrough
 
 <!-- GIF Placeholder: Platform Overview -->
-![Platform Overview GIF](./gifs/platform-overview.gif)
+![Platform Overview GIF](./public/gifs/gifs/platform.gif)
 
 <!-- GIF Placeholder: Shopping Experience -->
-![Shopping Experience GIF](./gifs/shopping-experience.gif)
+![Shopping Experience GIF](./public/gifs/gifs/buy_with_impact.gif)
 
 ---
 
@@ -71,8 +71,6 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 ## 🌱 Core Features
 
 ### 1. **EcoScore System**
-<!-- GIF Placeholder: EcoScore Analysis -->
-![EcoScore Analysis GIF](./gifs/ecoscore-analysis.gif)
 
 **AI-Powered Product Sustainability Rating**
 - **Comprehensive Analysis**: 5-component scoring system
@@ -95,7 +93,7 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 
 ### 2. **Your EcoSphere Dashboard**
 <!-- GIF Placeholder: Dashboard Overview -->
-![Dashboard Overview GIF](./gifs/dashboard-overview.gif)
+![Dashboard Overview GIF](./public/gifs/gifs/dashboard.gif)
 
 **Personalized Environmental Impact Hub**
 - **Impact Points Tracking**: Real-time points accumulation
@@ -114,7 +112,7 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 
 ### 3. **EcoSphere Impact (Global Community)**
 <!-- GIF Placeholder: Community Impact -->
-![Community Impact GIF](./gifs/community-impact.gif)
+![Community Impact GIF](./public/gifs/gifs/global_impact.gif)
 
 **Collective Environmental Impact Tracking**
 - **Community Stats**: 
@@ -135,7 +133,7 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 
 ### 4. **EcoSphere Partner Hub**
 <!-- GIF Placeholder: Partner Registration -->
-![Partner Registration GIF](./gifs/partner-registration.gif)
+![Partner Registration GIF](./public/gifs/gifs/partner_hub.gif)
 
 **Sustainable Business Onboarding Platform**
 - **Dual-Mode Forms**: Simplified vs Advanced data collection
@@ -156,7 +154,7 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 
 ### 5. **EcoSphere Groups**
 <!-- GIF Placeholder: Groups Overview -->
-![Groups Overview GIF](./gifs/groups-overview.gif)
+![Groups Overview GIF](./public/gifs/gifs/group_buy.gif)
 
 **Community-Driven Sustainability Groups**
 - **Group Creation**: Custom sustainability-focused communities
@@ -174,7 +172,7 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 
 ### 6. **Group Buy System**
 <!-- GIF Placeholder: Group Buying -->
-![Group Buying GIF](./gifs/group-buying.gif)
+![Group Buying GIF](./public/gifs/gifs/group_buy_2.gif)
 
 **Collaborative Purchasing for Impact**
 - **Bulk Purchasing**: Better prices through collective buying
@@ -191,7 +189,7 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 
 ### 7. **EcoSphere Rewards**
 <!-- GIF Placeholder: Rewards System -->
-![Rewards System GIF](./gifs/rewards-system.gif)
+![Rewards System GIF](./public/gifs/gifs/ecosphere_rewards.gif)
 
 **Gamified Sustainability Incentives**
 - **Tiered Discounts**: 5%-20% eco-discounts based on Impact Points
@@ -208,7 +206,7 @@ EcoSphere transforms traditional e-commerce by integrating sustainability metric
 
 ### 8. **EcoSphere Learn**
 <!-- GIF Placeholder: Education Platform -->
-![Education Platform GIF](./gifs/education-platform.gif)
+![Education Platform GIF](./public/gifs/gifs/ecosphere_learn.gif)
 
 **Interactive Sustainability Education**
 - **AI-Powered Content**: Gemini AI generates personalized educational material
